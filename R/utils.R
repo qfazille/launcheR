@@ -44,3 +44,4 @@ null.redirection <- function() {
         return("> /dev/null")
     }
 }
+
