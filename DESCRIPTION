@@ -1,0 +1,11 @@
+Package: launcheR
+Type: Package
+Title: the launcheR you need
+Version: 0.0.1
+Author: qfaz
+Maintainer: qfaz <quentin.fazilleau@gmail.com>
+Description: Generate and manage queue. Through bat or sh scrips.
+License: GPL (>=2)
+Encoding: UTF-8
+LazyData: true
+Suggests: testthat
