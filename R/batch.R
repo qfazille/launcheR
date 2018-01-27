@@ -12,7 +12,7 @@ setClass(
     prototype = prototype(
         alias = NULL,
         params = NULL,
-        parallelizable = FALSE,
+        parallelizable = TRUE,
         wait.before.next = TRUE
     )
 )
@@ -63,7 +63,7 @@ setMethod(f = "script", signature= "batch", definition = function(object) {
     # Set & or not
     if (object@wait.before.next) ampersand <- NULL else ampersand <- "&"
     launch      <- paste(rscript(), object@path, ampersand)
-    releaselock <- paste(rscript(), "launcheR:::release.lock()")
+    releaselock <- paste(rscript(), "launcheR:::release.batch()")
     lines <- paste(wait, setrdata, setrenviron, launch, releaselock, sep = linebreak())
     return(lines)
 })

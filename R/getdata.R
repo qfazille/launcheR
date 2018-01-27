@@ -1,10 +1,10 @@
 # get filenames
-file.wait.group <- function() {
+file.wait.queue <- function() {
     "./dev/waitgroup.RDS"
 }
 
-file.wait.batchs <- function() {
-    "./dev/waitbatchs.RDS"
+file.wait.batch <- function() {
+    "./dev/waitbatch.RDS"
 }
 
 file.historized <- function() {
@@ -17,12 +17,12 @@ file.running <- function() {
 
 
 # read files
-get.wait.group <- function() {
-    readRDS(file = file.wait.group())
+get.wait.queue <- function() {
+    readRDS(file = file.wait.queue())
 }
 
-get.wait.batchs <- function() {
-    readRDS(file = file.wait.batchs())
+get.wait.batch <- function() {
+    readRDS(file = file.wait.batch())
 }
 
 get.historized <- function() {
@@ -34,14 +34,14 @@ get.running <- function() {
 }
 
 # write files
-write.wait.group <- function(df) {
-    if (any(!c("id", "group", "queue", "wait_for_id") %in% colnames(df))) stop("df doesn't match the structure")
-    saveRDS(object = df, file = file.wait.group())
+write.wait.queue <- function(df) {
+    if (any(!c("id", "group", "queue", "wait_id") %in% colnames(df))) stop("df doesn't match the structure")
+    saveRDS(object = df, file = file.wait.queue())
 }
 
-write.wait.batchs <- function(df) {
-    if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
-    saveRDS(object = df, file = file.wait.batchs())
+write.wait.batch <- function(df) {
+    #if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
+    saveRDS(object = df, file = file.wait.batch())
 }
 
 write.historized <- function(df) {
@@ -54,25 +54,67 @@ write.running <- function() {
     saveRDS(object = df, file = file.running())
 }
 
-# get maximum id through waiting, running or historized data
-maxid <- function() {
+newid <- function(type = c("queue", "batch")) {
+    if (!type %in% c("queue", "batch")) stop("function newid must have type to queue or batch")
     # try on waiting
-    df <- get.wait.file()
+    if (type == "batch") {
+        df <- get.wait.batch()
+    } else {
+        df <- get.wait.queue()
+    }
     if (nrow(df) > 0) {
-        maxid <- max(df$id) + 1
+        return(max(df$id) + 1)
     } else {
         # try on running
-        df <- get.running()
+        df <- get.historized()
         if (nrow(df) > 0) {
-            maxid <- max(df$id) + 1
-        } else {
-            # try on historized
-            df <- get.historized()
-            if (nrow(df) > 0) {
-                maxid <- max(df$id) + 1
+            if (type == "batch") {
+                return(max(df$batch_id) + 1)
             } else {
-                maxid <- 1
+                return(max(df$queue_id) + 1)
             }
+        } else {
+            return(1)
         }
     }
 }
+
+newid.queue <- function() {
+    newid(type = "queue")
+}
+
+newid.batch <- function() {
+    newid(type = "batch")
+}
+
+#wait.for <- function(type = c("queue", "batch"), id) {
+#    if (id == 0) {
+#        wait <- FALSE
+#    } else {
+#        wait <- TRUE
+#    }
+#    while(wait) {
+#        Sys.sleep(10)
+#        if (type == "queue") {
+#            df <- get.wait.queue()
+#        } else {
+#            df <- get.wait.queue()
+#        }
+#        wait <- any(id %in% df$id)
+#    }
+#}
+
+# for dev
+wait.for <- function(type = c("queue", "batch"), id) {
+    message(paste("Wait for", type, paste(id, collapse = ",")))
+    return(TRUE)
+}
+
+wait.for.batchid <- function(id) {
+    wait.for(type = "batch", id = id)
+}
+
+wait.for.queueid <- function(id) {
+    wait.for(type = "queue", id = id)
+}
+
