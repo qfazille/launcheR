@@ -2,7 +2,7 @@
 
 # Get OS
 sysname <- function() {
-    sysname <- tolower(Sys.info()["sysname"])
+    sysname <- tolower(.Platform$OS.type)
     if (sysname == "windows") {
         return("Windows")
     } else if (sysname == "unix") {
