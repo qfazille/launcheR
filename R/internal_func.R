@@ -6,16 +6,9 @@ setRData <- function(file) {
     }
 }
 
-setRenviron <- function(queue, batch) {
-    if (is.null(queue) | is.null(batch)) stop("Both queue & batch must be filled")
-    LR_Q <- paste0("LR_Q=", queue)
-    LR_B <- paste0("LR_B=", batch)
-    cat(LR_Q, LR_B, file = ".Renviron", append = FALSE, sep = "\n")
-}
-
 wait.queue <- function(){
-    queue.name  <- Sys.getenv("LR_Q")
-    queue.group <- Sys.getenv("LR_G")
+    queue.name  <- get.queuename()
+    queue.group <- get.group()
     
     if (is.null(queue.name))   stop("environment variable LR_Q cannot be null")
     if (is.null(queue.group))  stop("environment variable LR_G cannot be null")
@@ -23,7 +16,9 @@ wait.queue <- function(){
     # Get data
     df <- get.wait.group()
     
+    # Write new queueid
     newid <- newid.queue()
+    write.Renviron(prefix = "LR_QID", value = newid)
     
     # if no group, then no check
     if (is.null(group)) {
@@ -55,12 +50,7 @@ wait.queue <- function(){
     return(TRUE)
 }
 
-wait.batch <- function(parallelizable = TRUE) {
-    queue.name   <- Sys.getenv("LR_Q")
-    queue.id     <- Sys.getenv("LR_QID")
-    queue.group  <- Sys.getenv("LR_G")
-    batch.name   <- Sys.getenv("LR_B")
-    batch.par    <- Sys.getenv("LR_BPAR")
+wait.batch <- function() {
     
     if (queue.name == "")    stop("environment variable LR_Q cannot be null")
     if (queue.id == "")      stop("environment variable LR_QID cannot be null")
@@ -71,10 +61,12 @@ wait.batch <- function(parallelizable = TRUE) {
     # Get data
     df <- get.wait.batch()
 
-    # If batch not present then insert and launch
+    # Write new batchid
     newid <- newid.batch()
+    write.Renviron(prefix = "LR_BID", value = newid)
+    
     if (length(which(df$batch == batch.name)) == 0) {
-        toInsert <- data.frame(queueid = queue.id, batchid = newid, batch = batch.name, parallelizable = batch.par, wait = 0, progress = 0)
+        toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = 0, progress = 0)
         df <- rbind(df, toInsert)
         write.wait.batch(df = df)
         # launch
@@ -92,7 +84,7 @@ wait.batch <- function(parallelizable = TRUE) {
             to_wait <- id_wait_max
         }
         # batchid to wait is to_wait
-        toInsert <- data.frame(queueid = queue.id, batchid = newid, batch = batch.name, parallelizable = batch.par, wait = to_wait, progress = 0)
+        toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = to_wait, progress = 0)
         df <- rbind(df, toInsert)
         write.wait.batch(df = df)
         wait.for.batchid(id = to_wait)
@@ -107,7 +99,7 @@ wait.batch <- function(parallelizable = TRUE) {
 
 release.batch <- function(name) {
     if (is.null(name)) stop("name cannot be NULL in release.batch function")
-    
+    return(TRUE)
 }
 
 release.queue <- function(name) {
@@ -118,4 +110,16 @@ release.queue <- function(name) {
     
     if (!name %in% df$queue) stop(paste("queue", name, "doesn't exists"))
     
-    
+    return(TRUE)
+}
+
+write.Renviron <- function(prefix, value) {
+    x <- readLines(".Renviron")
+    toChange <- which(startsWith(x, paste0(prefix, "=")))
+    if (length(toChange) == 0) {
+        x <- c(x, paste0(prefix, "='", value, "'"))
+    } else {
+        x[toChange] <- paste0(prefix, "='", value, "'")
+    }
+    cat(x, file = ".Renviron", sep = linebreak())
+}
