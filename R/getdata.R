@@ -11,11 +11,6 @@ file.historized <- function() {
     "./dev/historized.RDS"
 }
 
-file.running <- function() {
-    "./dev/running.RDS"
-}
-
-
 # read files
 get.wait.queue <- function() {
     readRDS(file = file.wait.queue())
@@ -27,10 +22,6 @@ get.wait.batch <- function() {
 
 get.historized <- function() {
     readRDS(file = file.historized())
-}
-
-get.running <- function() {
-    readRDS(file = file.running())
 }
 
 # write files
@@ -47,11 +38,6 @@ write.wait.batch <- function(df) {
 write.historized <- function(df) {
     if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
     saveRDS(object = df, file = file.historized())
-}
-
-write.running <- function() {
-    if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
-    saveRDS(object = df, file = file.running())
 }
 
 newid <- function(type = c("queue", "batch")) {
