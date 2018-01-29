@@ -60,12 +60,23 @@
         write.wait.batch(df = df)
     }
     
+    set0.wait.queue <- function(id) {
+        df <- get.wait.queue()
+        df[which(df$queueid == id), "wait"] <- 0
+        write.wait.queue(df = df)
+    }
+    
     add.wait.batch <- function(add) {
         df <- get.wait.batch()
         df <- rbind(df, add)
         write.wait.batch(df = df)
     }
-
+    
+    add.wait.queue <- function(add) {
+        df <- get.wait.queue()
+        df <- rbind(df, add)
+        write.wait.queue(df = df)
+    }
 }
 
 
