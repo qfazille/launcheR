@@ -34,97 +34,38 @@
     
     # write files
     write.wait.queue <- function(df) {
-        if (any(!c("id", "group", "queue", "wait_id") %in% colnames(df))) stop("df doesn't match the structure")
+        df <- factors2char(df)
+        expect_equal(c("queueid", "group", "name", "wait"), colnames(df))
+        expect_equal(c("numeric", "character", "character", "numeric"), sapply(df, class))
         saveRDS(object = df, file = file.wait.queue())
     }
     
     write.wait.batch <- function(df) {
-        #if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
+        df <- factors2char(df)
+        expect_equal(c("batchid", "queueid", "group", "name", "parallelizable", "wait", "progress"), colnames(df))
+        expect_true(all(c("numeric", "numeric", "character", "character", "logical", "numeric", "numeric") == sapply(df, class)))
         saveRDS(object = df, file = file.wait.batch())
     }
     
     write.historized <- function(df) {
-        if (any(!c("id", "") %in% colnames(df))) stop("df doesn't match the structure")
+        df <- factors2char(df)
+        expect_equal(c("queueid", "batchid", "group", "queuename", "batchname"), colnames(df))
+        expect_true(all(c("numeric", "numeric", "character", "character", "character") == sapply(df, class)))
         saveRDS(object = df, file = file.historized())
     }
-}
-
-newid.queue <- function() {
-    df <- get.wait.queue()
-    if (nrow(df) > 0) {
-        return(max(df$queueid) + 1)
-    } else {
-        df <- get.historized()
-        if (nrow(df) > 0) {
-            return(max(df$queueid) + 1)
-        } else {
-            return(1)
-        }
+    
+    set0.wait.batch <- function(id) {
+        df <- get.wait.batch()
+        df[which(df$batchid == id), "wait"] <- 0
+        write.wait.batch(df = df)
     }
-}
-
-newid.batch <- function() {
-    df <- get.wait.batch()
-    if (nrow(df) > 0) {
-        return(max(df$batchid) + 1)
-    } else {
-        df <- get.historized()
-        if (nrow(df) > 0) {
-            return(max(df$batchid) + 1)
-        } else {
-            return(1)
-        }
+    
+    add.wait.batch <- function(add) {
+        df <- get.wait.batch()
+        df <- rbind(df, add)
+        write.wait.batch(df = df)
     }
+
 }
 
-#wait.for <- function(type = c("queue", "batch"), id) {
-#    if (id == 0) {
-#        wait <- FALSE
-#    } else {
-#        wait <- TRUE
-#    }
-#    while(wait) {
-#        Sys.sleep(10)
-#        if (type == "queue") {
-#            df <- get.wait.queue()
-#            wait <- any(id %in% df$queueid)
-#        } else {
-#            df <- get.wait.batch(with.done = FALSE)
-#            wait <- any(id %in% df$batchid)
-#        }
-#    }
-#}
 
-# for dev
-wait.for <- function(type = c("queue", "batch"), id) {
-    message(paste("Wait for", type, paste(id, collapse = ",")))
-    return(TRUE)
-}
-
-wait.for.batchid <- function(id) {
-    wait.for(type = "batch", id = id)
-}
-
-wait.for.queueid <- function(id) {
-    wait.for(type = "queue", id = id)
-}
-
-get.queuename <- function() {
-    Sys.getenv("LR_Q")
-}
-
-get.queueid <- function() {
-    as.numeric(Sys.getenv("LR_QID"))
-}
-
-get.group <- function() {
-    Sys.getenv("LR_G")
-}
-
-get.batch <- function() {
-    Sys.getenv("LR_B")
-}
-
-get.batchid <- function() {
-    as.numeric(Sys.getenv("LR_QBD"))
-}

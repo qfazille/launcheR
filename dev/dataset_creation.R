@@ -30,17 +30,3 @@ df <- data.frame(queueid = integer()
                  , stringsAsFactors = FALSE)
 saveRDS(object = df, file = "./dev/historized.RDS")
 
-# test de wait.batch
-get.wait.batch()
-
-Sys.setenv("LR_Q" = "Q1")
-Sys.setenv("LR_QID" = 1)
-Sys.setenv("LR_Q" = "A")
-queue.name   <- Sys.getenv("LR_Q")
-queue.id     <- Sys.getenv("LR_QID")
-queue.group  <- Sys.getenv("LR_G")
-batch.name   <- Sys.getenv("LR_B")
-batch.par    <- Sys.getenv("LR_BPAR")
-
-wait.batch()
-

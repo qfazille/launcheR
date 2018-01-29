@@ -52,11 +52,11 @@ wait.queue <- function(){
 
 wait.batch <- function() {
     
-    if (queue.name == "")    stop("environment variable LR_Q cannot be null")
-    if (queue.id == "")      stop("environment variable LR_QID cannot be null")
-    if (queue.group == "")   stop("environment variable LR_G cannot be null")
-    if (batch.name == "")    stop("environment variable LR_B cannot be null")
-    if (batch.par == "")     stop("environment variable LR_BPAR cannot be null")
+    queue.name  <- get.queuename()
+    queue.id    <- get.queueid()
+    queue.group <- get.group()
+    batch.name  <- get.batchname()
+    batch.par   <- get.batchpar()
     
     # Get data
     df <- get.wait.batch()
@@ -65,13 +65,12 @@ wait.batch <- function() {
     newid <- newid.batch()
     write.Renviron(prefix = "LR_BID", value = newid)
     
-    if (length(which(df$batch == batch.name)) == 0) {
+    if (length(which(df$name == batch.name)) == 0) {
         toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = 0, progress = 0)
-        df <- rbind(df, toInsert)
-        write.wait.batch(df = df)
+        add.wait.batch(add = toInsert)
         # launch
     } else {
-        id_wait_max <- df[which(df$wait == max(df$wait) & df$batch == batch.name), "batchid"]
+        id_wait_max <- df[which(df$wait == max(df$wait) & df$name == batch.name), "batchid"]
         if (batch.par) {
             id_wait_max_par <- df[which(df$batchid %in% id_wait_max), "parallelizable"]
             # Either one batchid with FALSE or one or several batchid with par = TRUE
@@ -85,13 +84,9 @@ wait.batch <- function() {
         }
         # batchid to wait is to_wait
         toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = to_wait, progress = 0)
-        df <- rbind(df, toInsert)
-        write.wait.batch(df = df)
+        add.wait.batch(add = toInsert)
         wait.for.batchid(id = to_wait)
-        # Set wait = 0
-        df <- get.wait.batch()
-        df[which(df$batchid == newid), "wait"] <- 0
-        write.wait.batch(df = df)
+        #set0.wait.batch(id = newid)
         # launch
     }
     return(TRUE)
