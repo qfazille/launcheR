@@ -10,9 +10,6 @@ wait.queue <- function(){
     queue.name  <- get.queuename()
     queue.group <- get.group()
     
-    if (is.null(queue.name))   stop("environment variable LR_Q cannot be null")
-    if (is.null(queue.group))  stop("environment variable LR_G cannot be null")
-    
     # Get data
     df <- get.wait.group()
     
@@ -22,28 +19,23 @@ wait.queue <- function(){
     
     # if no group, then no check
     if (is.null(group)) {
-        toInsert <- c(queueid = newid, group = NA, name = queue.name, wait = 0)
-        df <- rbind(df, toInsert)
-        write.wait.group(df = df)
+        toInsert <- c(queueid = newid, group = NA, name = queue.name, wait = 0, stringsAsFactors = FALSE)
+        add.wait.queue(add = toInsert)
         # queue can be launched
     } else {
         # Check if group not present
         if (length(df[which(df$group == group),"id"]) == 0) {
-            toInsert <- c(queueid = newid, group = group, name = name, wait = 0)
-            df <- rbind(df, toInsert)
-            write.wait.group(df = df)
+            toInsert <- c(queueid = newid, group = group, name = name, wait = 0, stringsAsFactors = FALSE)
+            add.wait.queue(add = toInsert)
             # queue can be launched
         } else {
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == group),"queueid"])
-            toInsert <- c(queueid = newid, group = group, name = queue.name, wait = wait_for_id)
-            df <- rbind(df, toInsert)
-            write.wait.group(df = df)
+            toInsert <- c(queueid = newid, group = group, name = queue.name, wait = wait_for_id, stringsAsFactors = FALSE)
+            add.wait.queue(add = toInsert)
             wait.for.queueid(id = wait_for_id)
             # Set wait = 0
-            df <- get.wait.queue()
-            df[which(df$queueid == newid), "wait"] <- 0
-            write.wait.queue(df = df)
+            #set0.wait.queue # COMMENTED for DEV
             # launch
         }
     }
@@ -83,10 +75,10 @@ wait.batch <- function() {
             to_wait <- id_wait_max
         }
         # batchid to wait is to_wait
-        toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = to_wait, progress = 0)
+        toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = to_wait, progress = 0, stringsAsFactors = FALSE)
         add.wait.batch(add = toInsert)
         wait.for.batchid(id = to_wait)
-        #set0.wait.batch(id = newid)
+        #set0.wait.batch(id = newid) #### ONLY FOR DEV
         # launch
     }
     return(TRUE)
