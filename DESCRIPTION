@@ -1,6 +1,6 @@
 Package: launcheR
 Type: Package
-Title: the launcheR you need
+Title: launch R scripts, manage waiting queue
 Version: 0.0.1
 Author: qfaz
 Maintainer: qfaz <quentin.fazilleau@gmail.com>
