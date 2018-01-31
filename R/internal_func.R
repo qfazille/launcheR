@@ -9,14 +9,14 @@ setRData <- function(file) {
 wait.queue <- function(){
     queue.name  <- get.queuename()
     queue.group <- get.group()
-    
+
     # Get data
     df <- get.wait.group()
-    
+
     # Write new queueid
     newid <- newid.queue()
     write.Renviron(prefix = "LR_QID", value = newid)
-    
+
     # if no group, then no check
     if (is.null(group)) {
         toInsert <- c(queueid = newid, group = NA, name = queue.name, wait = 0, stringsAsFactors = FALSE)
@@ -43,26 +43,27 @@ wait.queue <- function(){
 }
 
 wait.batch <- function() {
-    
+
     queue.name  <- get.queuename()
     queue.id    <- get.queueid()
     queue.group <- get.group()
     batch.name  <- get.batchname()
     batch.par   <- get.batchpar()
-    
+
     # Get data
     df <- get.wait.batch()
 
     # Write new batchid
     newid <- newid.batch()
     write.Renviron(prefix = "LR_BID", value = newid)
-    
+
     if (length(which(df$name == batch.name)) == 0) {
         toInsert <- data.frame(batchid = newid, queueid = queue.id, group = queue.group, name = batch.name, parallelizable = batch.par, wait = 0, progress = 0)
         add.wait.batch(add = toInsert)
         # launch
     } else {
-        id_wait_max <- df[which(df$wait == max(df$wait) & df$name == batch.name), "batchid"]
+        df <- df[which(df$name == batch.name),]
+        id_wait_max <- df[which(df$wait == max(df$wait)), "batchid"]
         if (batch.par) {
             id_wait_max_par <- df[which(df$batchid %in% id_wait_max), "parallelizable"]
             # Either one batchid with FALSE or one or several batchid with par = TRUE
@@ -91,12 +92,12 @@ release.batch <- function(name) {
 
 release.queue <- function(name) {
     if (is.null(name)) stop("name cannot be NULL in release.queue function")
-    
+
     # Get data
     df <- get.wait.group()
-    
+
     if (!name %in% df$queue) stop(paste("queue", name, "doesn't exists"))
-    
+
     return(TRUE)
 }
 
