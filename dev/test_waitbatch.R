@@ -1,5 +1,8 @@
 # test de wait.batch
+source("./R/zzz.R")
 source("./R/utils.R")
+source("./R/newid.R")
+source("./R/wait.R")
 source("./R/getdata.R")
 source("./R/getenv.R")
 source("./R/internal_func.R") #Je commente juste set0.wait.batch(id = newid)
@@ -16,11 +19,20 @@ wait.batch()
 get.wait.batch()
 
 # 2nd batch
+Sys.setenv("LR_B" = "B2")
 Sys.setenv("LR_BPAR" = "FALSE")
 wait.batch()
 get.wait.batch()
 
 # etc...
-Sys.setenv("LR_BPAR" = "TRUE")
+Sys.setenv("LR_B" = "B3")
+Sys.setenv("LR_BPAR" = "FALSE")
 wait.batch()
 get.wait.batch()
+
+df <- get.wait.batch()
+df2 <- df %>% group_by(batchid, queueid, group, name, parallelizable, progress) %>% summarise(wait_c = paste(wait, collapse = ",")) %>% ungroup() %>% select(batchid, name, wait = wait_c)
+df2[] <- lapply(df2, as.character)
+
+status <- sapply(df2$wait, function(x) if(x == "0") "in progress" else "waiting")
+df2$status <- status
