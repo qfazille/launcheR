@@ -4,8 +4,9 @@ source("./R/utils.R")
 source("./R/newid.R")
 source("./R/wait.R")
 source("./R/getdata.R")
+source("./R/dev_fun.R")
 source("./R/getenv.R")
-source("./R/internal_func.R") #Je commente juste set0.wait.batch(id = newid)
+source("./R/internal_func.R") # launch.wait.[batch|queue] commented for dev
 
 get.wait.batch()
 
