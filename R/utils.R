@@ -45,3 +45,7 @@ null.redirection <- function() {
     }
 }
 
+# Get date as character
+get.date <- function() {
+    format(Sys.time(), format="%Y-%m-%d %H:%M:%S")
+}
