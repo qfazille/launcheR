@@ -3,7 +3,7 @@ newid.queue <- function() {
     if (nrow(df) > 0) {
         return(max(df$queueid) + 1)
     } else {
-        df <- get.historized()
+        df <- get.historized.batch()
         if (nrow(df) > 0) {
             return(max(df$queueid) + 1)
         } else {
@@ -17,7 +17,7 @@ newid.batch <- function() {
     if (nrow(df) > 0) {
         return(max(df$batchid) + 1)
     } else {
-        df <- get.historized()
+        df <- get.historized.batch()
         if (nrow(df) > 0) {
             return(max(df$batchid) + 1)
         } else {

@@ -1,3 +1,4 @@
+#' @export
 setRData <- function(file) {
     if (file %in% list.files()) {
         file.rename(from = file, to = ".RData")
@@ -6,6 +7,7 @@ setRData <- function(file) {
     }
 }
 
+#' @export
 wait.queue <- function(){
     queue.name  <- get.queuename()
     group <- get.group()
@@ -39,13 +41,14 @@ wait.queue <- function(){
     }
 }
 
+#' @export
 wait.batch <- function() {
 
-    queue.name  <- get.queuename()
-    queue.id    <- get.queueid()
-    queue.group <- get.group()
-    batch.name  <- get.batchname()
-    batch.par   <- get.batchpar()
+    queue_name  <- get.queuename()
+    queue_id    <- get.queueid()
+    queue_group <- get.group()
+    batch_name  <- get.batchname()
+    batch_par   <- get.batchpar()
 
     # Get data
     df <- get.wait.batch()
@@ -54,21 +57,21 @@ wait.batch <- function() {
     newid <- newid.batch()
     write.Renviron(prefix = "LR_BID", value = newid)
 
-    if (length(which(df$name == batch.name)) == 0) {
+    if (length(which(df$name == batch_name)) == 0) {
         add.wait.batch(batchid = newid
-            , queueid = queue.id
-            , group = queue.group
-            , namae = batch.name
-            , parallelizable = batch.par
+            , queueid = queue_id
+            , group = queue_group
+            , name = batch_name
+            , parallelizable = batch_par
             , wait = 0
             , progress = 0
             , startDate = get.date()
             , realStartDate = get.date())
         # launch
     } else {
-        df <- df[which(df$name == batch.name),]
+        df <- df[which(df$name == batch_name),]
         id_wait_max <- df[which(df$wait == max(df$wait)), "batchid"]
-        if (batch.par) {
+        if (batch_par) {
             id_wait_max_par <- df[which(df$batchid %in% id_wait_max), "parallelizable"]
             # Either one batchid with FALSE or one or several batchid with par = TRUE
             if (all(id_wait_max_par)) {
@@ -81,10 +84,10 @@ wait.batch <- function() {
         }
         # add to waiting batch
         add.wait.batch(batchid = newid
-            , queueid = queue.id
-            , group = queue.group
-            , namae = batch.name
-            , parallelizable = batch.par
+            , queueid = queue_id
+            , group = queue_group
+            , name = batch_name
+            , parallelizable = batch_par
             , wait = to_wait
             , progress = 0
             , startDate = get.date())
@@ -95,6 +98,7 @@ wait.batch <- function() {
     }
 }
 
+#' @export
 release.batch <- function() {
     batch.id <- get.batchid()
     df <- get.wait.batch()
@@ -105,6 +109,8 @@ release.batch <- function() {
     write.wait.batch(df = df)
 }
 
+#' @export
+#' @import testthat
 release.queue <- function() {
     queue.id    <- get.queueid()
     queue.name  <- get.queuename()
@@ -126,6 +132,7 @@ release.queue <- function() {
     add.historized.queue(queueid = queue.id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }
 
+#' @export
 write.Renviron <- function(prefix, value) {
     x <- readLines(".Renviron")
     toChange <- which(startsWith(x, paste0(prefix, "=")))

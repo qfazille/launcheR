@@ -1,12 +1,4 @@
-# test de wait.batch
-source("./R/zzz.R")
-source("./R/utils.R")
-source("./R/newid.R")
-source("./R/wait.R")
-source("./R/getdata.R")
-source("./R/dev_fun.R")
-source("./R/getenv.R")
-source("./R/internal_func.R") # launch.wait.[batch|queue] commented for dev
+library(launcheR)
 
 get.wait.batch()
 
@@ -20,13 +12,13 @@ wait.batch()
 get.wait.batch()
 
 # 2nd batch
-Sys.setenv("LR_B" = "B2")
+Sys.setenv("LR_B" = "B1")
 Sys.setenv("LR_BPAR" = "FALSE")
 wait.batch()
 get.wait.batch()
 
 # etc...
-Sys.setenv("LR_B" = "B3")
+Sys.setenv("LR_B" = "B1")
 Sys.setenv("LR_BPAR" = "FALSE")
 wait.batch()
 get.wait.batch()

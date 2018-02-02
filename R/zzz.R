@@ -12,15 +12,6 @@ char2factors <- function(x) {
     x
 }
 
-# Very powerfull function that converts all numeric type to num or int and characters to factors.
-setNumOrFact <- function(x) {
-    x <- as.data.frame(x)
-    stopifnot(is.list(x))
-    x[] <- rapply(x, utils::type.convert, classes = "character", how = "replace")
-    return(as.data.frame(x))
-}
-
-# Without checks
 setNumOrFact <- function(x) {
     rapply(x, utils::type.convert, classes = "character", how = "replace")
 }
