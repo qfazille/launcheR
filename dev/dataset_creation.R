@@ -3,10 +3,10 @@ source("./R/getdata.R")
 
 
 # create get.wait.queue
-df <- data.frame(queueid = integer()
+df <- data.frame(queueid = numeric()
                  , group = character()
                  , name = character()
-                 , wait = integer()
+                 , wait = numeric()
                  , startDate = character()
                  , realStartDate = character()
                  # no need for realStartDate because when needed, it's time to historized
@@ -14,13 +14,13 @@ df <- data.frame(queueid = integer()
 saveRDS(object = df, file = "./dev/waitqueue.RDS")
 
 # create get.wait.batch
-df <- data.frame(batchid = integer()
-                , queueid = integer()
+df <- data.frame(batchid = numeric()
+                , queueid = numeric()
                 , group = character()
                 , name = character()
                 , parallelizable = logical()
-                , wait = integer()
-                , progress = integer()
+                , wait = numeric()
+                , progress = numeric()
                 , startDate = character()
                 , realStartDate = character()
                 , endDate = character()
@@ -28,8 +28,8 @@ df <- data.frame(batchid = integer()
 saveRDS(object = df, file = "./dev/waitbatch.RDS")
 
 # create get.historized.batch
-df <- data.frame(queueid = integer()
-                 , batchid = integer()
+df <- data.frame(queueid = numeric()
+                 , batchid = numeric()
                  , group = character()
                  , queuename = character()
                  , batchname = character()
@@ -40,7 +40,7 @@ df <- data.frame(queueid = integer()
 saveRDS(object = df, file = "./dev/historizedbatch.RDS")
 
 # create get.historized.queue
-df <- data.frame(queueid = integer()
+df <- data.frame(queueid = numeric()
                  , group = character()
                  , queuename = character()
                  , startDate = character()
