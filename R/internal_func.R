@@ -1,24 +1,17 @@
 #' @export
-setRData <- function(file) {
-    if (file %in% list.files()) {
-        file.rename(from = file, to = ".RData")
-    } else {
-        stop(paste("File", file, "doesn't exist"))
-    }
-}
-
-#' @export
-waitQueue <- function(){
-    queue_name  <- getQueuename()
-    group <- getGroup()
-
+waitQueue <- function(queue_name, group){
+    
+    # Write queue_name & group in Renviron
+    writeRenviron(prefix = "LR_Q", value = queue_name)
+    writeRenviron(prefix = "LR_G", value = group)
+    
     # Get data
     df <- getWaitQueue()
-
+    
     # Write new queueid
     newid <- newidQueue()
     writeRenviron(prefix = "LR_QID", value = newid)
-
+    
     # if no group, then no check
     if (is.null(group)) {
         addWaitQueue(queueid = newid, group = NA, name = queue_name, wait = 0)
@@ -35,28 +28,34 @@ waitQueue <- function(){
             addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id)
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
-            #launchWaitQueue(id = newid) # this set wait = 0 (commented for dev)
+            launchWaitQueue(id = newid) # this set wait = 0 (commented for dev)
             # launch
         }
     }
 }
 
 #' @export
-waitBatch <- function() {
-
+waitBatch <- function(batch_name, batch_par) {
+    
+    # input
+    batch_par <- as.logical(batch_par)
+    
+    # Get env
     queue_name  <- getQueuename()
     queue_id    <- getQueueid()
     queue_group <- getGroup()
-    batch_name  <- getBatchname()
-    batch_par   <- getBatchpar()
-
+    
+    # Write queue_name & group in Renviron
+    writeRenviron(prefix = "LR_B", value = batch_name)
+    writeRenviron(prefix = "LR_BPAR", value = batch_par)
+    
     # Get data
     df <- getWaitBatch()
-
+    
     # Write new batchid
     newid <- newidBatch()
     writeRenviron(prefix = "LR_BID", value = newid)
-
+    
     if (length(which(df$name == batch_name)) == 0) {
         addWaitBatch(batchid = newid
             , queueid = queue_id
@@ -142,4 +141,13 @@ writeRenviron <- function(prefix, value) {
         x[toChange] <- paste0(prefix, "='", value, "'")
     }
     cat(x, file = ".Renviron", sep = linebreak())
+}
+
+#' @export
+setRData <- function(file) {
+    if (file %in% list.files()) {
+        file.rename(from = file, to = ".RData")
+    } else {
+        stop(paste("File", file, "doesn't exist"))
+    }
 }
