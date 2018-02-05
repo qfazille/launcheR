@@ -1,21 +1,21 @@
 # All are dev functions
 #' @importFrom utils str
-str.wait.batch <- function() {
-    df <- get.wait.batch()
+strWaitBatch <- function() {
+    df <- getWaitBatch()
     str(df)
 }
 #' @importFrom utils str
-str.wait.queue <- function() {
-    df <- get.wait.queue()
+strWaitQueue <- function() {
+    df <- getWaitQueue()
     str(df)
 }
 #' @importFrom utils str
-str.historized.batch <- function() {
-    df <- get.historized.batch()
+strHistorizedBatch <- function() {
+    df <- getHistorizedBatch()
     str(df)
 }
 #' @importFrom utils str
-str.historized.queue <- function() {
-    df <- get.historized.queue()
+strHistorizedQueue <- function() {
+    df <- getHistorizedQueue()
     str(df)
 }

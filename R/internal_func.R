@@ -8,65 +8,65 @@ setRData <- function(file) {
 }
 
 #' @export
-wait.queue <- function(){
-    queue.name  <- get.queuename()
-    group <- get.group()
+waitQueue <- function(){
+    queue_name  <- getQueuename()
+    group <- getGroup()
 
     # Get data
-    df <- get.wait.queue()
+    df <- getWaitQueue()
 
     # Write new queueid
-    newid <- newid.queue()
-    write.Renviron(prefix = "LR_QID", value = newid)
+    newid <- newidQueue()
+    writeRenviron(prefix = "LR_QID", value = newid)
 
     # if no group, then no check
     if (is.null(group)) {
-        add.wait.queue(queueid = newid, group = NA, name = queue.name, wait = 0)
+        addWaitQueue(queueid = newid, group = NA, name = queue_name, wait = 0)
         # queue can be launched
     } else {
         # Check if group not present
         if (length(df[which(df$group == group),"id"]) == 0) {
-            add.wait.queue(queueid = newid, group = group, name = queue.name)
+            addWaitQueue(queueid = newid, group = group, name = queue_name)
             # queue can be launched
         } else {
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == group),"queueid"])
             # add in waiting queue
-            add.wait.queue(queueid = newid, group = group, name = queue.name, wait = wait_for_id)
+            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id)
             # wait before launch queue
-            wait.for.queueid(id = wait_for_id)
-            #launch.wait.queue(id = newid) # this set wait = 0 (commented for dev)
+            waitForQueueid(id = wait_for_id)
+            #launchWaitQueue(id = newid) # this set wait = 0 (commented for dev)
             # launch
         }
     }
 }
 
 #' @export
-wait.batch <- function() {
+waitBatch <- function() {
 
-    queue_name  <- get.queuename()
-    queue_id    <- get.queueid()
-    queue_group <- get.group()
-    batch_name  <- get.batchname()
-    batch_par   <- get.batchpar()
+    queue_name  <- getQueuename()
+    queue_id    <- getQueueid()
+    queue_group <- getGroup()
+    batch_name  <- getBatchname()
+    batch_par   <- getBatchpar()
 
     # Get data
-    df <- get.wait.batch()
+    df <- getWaitBatch()
 
     # Write new batchid
-    newid <- newid.batch()
-    write.Renviron(prefix = "LR_BID", value = newid)
+    newid <- newidBatch()
+    writeRenviron(prefix = "LR_BID", value = newid)
 
     if (length(which(df$name == batch_name)) == 0) {
-        add.wait.batch(batchid = newid
+        addWaitBatch(batchid = newid
             , queueid = queue_id
             , group = queue_group
             , name = batch_name
             , parallelizable = batch_par
             , wait = 0
             , progress = 0
-            , startDate = get.date()
-            , realStartDate = get.date())
+            , startDate = getDate()
+            , realStartDate = getDate())
         # launch
     } else {
         df <- df[which(df$name == batch_name),]
@@ -83,57 +83,57 @@ wait.batch <- function() {
             to_wait <- id_wait_max
         }
         # add to waiting batch
-        add.wait.batch(batchid = newid
+        addWaitBatch(batchid = newid
             , queueid = queue_id
             , group = queue_group
             , name = batch_name
             , parallelizable = batch_par
             , wait = to_wait
             , progress = 0
-            , startDate = get.date())
+            , startDate = getDate())
         # wait before launch
-        wait.for.batchid(id = to_wait)
-        #launch.wait.batch(id = newid) # this set wait = 0 (commented for dev)
+        waitForBatchid(id = to_wait)
+        #launchWaitBatch(id = newid) # this set wait = 0 (commented for dev)
         # launch
     }
 }
 
 #' @export
-release.batch <- function() {
-    batch.id <- get.batchid()
-    df <- get.wait.batch()
+releaseBatch <- function() {
+    batch_id <- getBatchid()
+    df <- getWaitBatch()
     # Set wait to -1 (means batch not running anymore but queue still running)
-    df[which(df$batchid == batch.id), "wait"]       <- -1
-    df[which(df$batchid == batch.id), "progress"]   <- 100
-    df[which(df$batchid == batch.id), "endDate"]    <- get.date()
-    write.wait.batch(df = df)
+    df[which(df$batchid == batch_id), "wait"]       <- -1
+    df[which(df$batchid == batch_id), "progress"]   <- 100
+    df[which(df$batchid == batch_id), "endDate"]    <- getDate()
+    writeWaitBatch(df = df)
 }
 
 #' @export
 #' @import testthat
-release.queue <- function() {
-    queue.id    <- get.queueid()
-    queue.name  <- get.queuename()
-    # Write wait.batch (priority 1)
-    df <- get.wait.batch()
-    bh <- df[which(df$queueid == queue.id), ]
+releaseQueue <- function() {
+    queue_id    <- getQueueid()
+    queue_name  <- getQueuename()
+    # Write waitBatch (priority 1)
+    df <- getWaitBatch()
+    bh <- df[which(df$queueid == queue_id), ]
     expect_gt(nrow(bh), 0)
-    df <- df[-which(df$queueid == queue.id), ]
-    write.wait.batch(df = df)
-    # Write wait.queue (priority 2)
-    df <- get.wait.queue()
-    qh <- df[which(df$queueid == queue.id), ]
+    df <- df[-which(df$queueid == queue_id), ]
+    writeWaitBatch(df = df)
+    # Write waitQueue (priority 2)
+    df <- getWaitQueue()
+    qh <- df[which(df$queueid == queue_id), ]
     expect_equal(nrow(qh), 1)
-    df <- df[-which(df$queueid == queue.id), ]
-    write.wait.queue(df = df)
+    df <- df[-which(df$queueid == queue_id), ]
+    writeWaitQueue(df = df)
     # Write historized.batch (priority 3)
-    add.historized.batch(queueid = queue.id, batchid = bh$batchid, group = bh$group, queuename = queue.name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate)
+    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate)
     # Write historized queue  (priority 3)
-    add.historized.queue(queueid = queue.id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
+    addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }
 
 #' @export
-write.Renviron <- function(prefix, value) {
+writeRenviron <- function(prefix, value) {
     x <- readLines(".Renviron")
     toChange <- which(startsWith(x, paste0(prefix, "=")))
     if (length(toChange) == 0) {
