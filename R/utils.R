@@ -36,6 +36,13 @@ rscript <- function() {
     }
 }
 
+rscriptOptions <- function(execute = FALSE, restore = FALSE) {
+    opt <- rscript()
+    if (execute) opt <- paste(opt, "-e")
+    if (restore) opt <- paste(opt, "--restore")
+    return(opt)
+}
+
 # Null redirection
 nullRedirection <- function() {
     if (sysname() == "Windows") {
@@ -45,7 +52,38 @@ nullRedirection <- function() {
     }
 }
 
+# executable file
+executableExt <- function() {
+    if (sysname() == "Windows") {
+        return("bat")
+    } else if (sysname() == "Unix") {
+        return("sh")
+    }
+}
+
+# header
+runHeader <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("#!/bin/bash")
+    }
+}
+
+# sleep
+getSleep <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("sleep 1")
+    }
+}
+
 # Get date as character
 getDate <- function() {
     format(Sys.time(), format="%Y-%m-%d %H:%M:%S")
+}
+
+getTS <- function() {
+    format(Sys.time(), format="%Y%m%d_%H%M%S")
 }

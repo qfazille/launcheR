@@ -23,9 +23,9 @@ getBatchname <- function(mandatory = TRUE) {
 }
 
 getBatchid <- function(mandatory = TRUE) {
-    val <- as.numeric(Sys.getenv("LR_QBD"))
+    val <- as.numeric(Sys.getenv("LR_BID"))
     if (is.na(val)) val <- NULL
-    if (mandatory & is.null(val)) stop("environment variable LR_QBD cannot be null") else return(val)
+    if (mandatory & is.null(val)) stop("environment variable LR_BID cannot be null") else return(val)
 }
 
 getBatchpar <- function(mandatory = TRUE) {
