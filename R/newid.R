@@ -1,9 +1,9 @@
-newid.queue <- function() {
-    df <- get.wait.queue()
+newidQueue <- function() {
+    df <- getWaitQueue()
     if (nrow(df) > 0) {
         return(max(df$queueid) + 1)
     } else {
-        df <- get.historized.batch()
+        df <- getHistorizedBatch()
         if (nrow(df) > 0) {
             return(max(df$queueid) + 1)
         } else {
@@ -12,12 +12,12 @@ newid.queue <- function() {
     }
 }
 
-newid.batch <- function() {
-    df <- get.wait.batch()
+newidBatch <- function() {
+    df <- getWaitBatch()
     if (nrow(df) > 0) {
         return(max(df$batchid) + 1)
     } else {
-        df <- get.historized.batch()
+        df <- getHistorizedBatch()
         if (nrow(df) > 0) {
             return(max(df$batchid) + 1)
         } else {

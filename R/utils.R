@@ -37,7 +37,7 @@ rscript <- function() {
 }
 
 # Null redirection
-null.redirection <- function() {
+nullRedirection <- function() {
     if (sysname() == "Windows") {
         return("> NUL")
     } else if (sysname() == "Unix") {
@@ -46,6 +46,6 @@ null.redirection <- function() {
 }
 
 # Get date as character
-get.date <- function() {
+getDate <- function() {
     format(Sys.time(), format="%Y-%m-%d %H:%M:%S")
 }

@@ -1,32 +1,32 @@
 # Just for dev
 # Then use RSQLite : https://cran.r-project.org/web/packages/RSQLite/vignettes/RSQLite.html
 # get filenames
-file.wait.queue <- function() {
+fileWaitQueue <- function() {
     "./dev/waitqueue.RDS"
 }
 
-file.wait.batch <- function() {
+fileWaitBatch <- function() {
     "./dev/waitbatch.RDS"
 }
 
-file.historized.batch <- function() {
+fileHistorizedBatch <- function() {
     "./dev/historizedbatch.RDS"
 }
 
-file.historized.queue <- function() {
+fileHistorizedQueue <- function() {
     "./dev/historizedqueue.RDS"
 }
 
 # read files
 
 #' @export
-get.wait.queue <- function() {
-    readRDS(file = file.wait.queue())
+getWaitQueue <- function() {
+    readRDS(file = fileWaitQueue())
 }
 
 #' @export
-get.wait.batch <- function(with.done = TRUE) {
-    df <- readRDS(file = file.wait.batch())
+getWaitBatch <- function(with.done = TRUE) {
+    df <- readRDS(file = fileWaitBatch())
     if (with.done) {
         return(df)
     } else {
@@ -35,62 +35,62 @@ get.wait.batch <- function(with.done = TRUE) {
 }
 
 #' @export
-get.historized.batch <- function() {
-    readRDS(file = file.historized.batch())
+getHistorizedBatch <- function() {
+    readRDS(file = fileHistorizedBatch())
 }
 
 #' @export
-get.historized.queue <- function() {
-    readRDS(file = file.historized.queue())
+getHistorizedQueue <- function() {
+    readRDS(file = fileHistorizedQueue())
 }
 
 
 # write files
 #' @import testthat
-write.wait.queue <- function(df) {
+writeWaitQueue <- function(df) {
     df <- factors2char(df)
-    expect_equal(sapply(df, class), sapply(get.wait.queue(), class))
-    saveRDS(object = df, file = file.wait.queue())
+    expect_equal(sapply(df, class), sapply(getWaitQueue(), class))
+    saveRDS(object = df, file = fileWaitQueue())
 }
 
 #' @import testthat
-write.wait.batch <- function(df) {
+writeWaitBatch <- function(df) {
     df <- factors2char(df)
-    expect_equal(sapply(df, class), sapply(get.wait.batch(), class))
-    saveRDS(object = df, file = file.wait.batch())
+    expect_equal(sapply(df, class), sapply(getWaitBatch(), class))
+    saveRDS(object = df, file = fileWaitBatch())
 }
 
 #' @import testthat
-write.historized.batch <- function(df) {
+writeHistorizedBatch <- function(df) {
     df <- factors2char(df)
-    expect_equal(sapply(df, class), sapply(get.historized.batch(), class))
-    saveRDS(object = df, file = file.historized.batch())
+    expect_equal(sapply(df, class), sapply(getHistorizedBatch(), class))
+    saveRDS(object = df, file = fileHistorizedBatch())
 }
 
 #' @import testthat
-write.historized.queue <- function(df) {
+writeHistorizedQueue <- function(df) {
     df <- factors2char(df)
-    expect_equal(sapply(df, class), sapply(get.historized.queue(), class))
-    saveRDS(object = df, file = file.historized.queue())
+    expect_equal(sapply(df, class), sapply(getHistorizedQueue(), class))
+    saveRDS(object = df, file = fileHistorizedQueue())
 }
 
 # Launch batch or queue
-launch.wait.batch <- function(id) {
-    df <- get.wait.batch()
+launchWaitBatch <- function(id) {
+    df <- getWaitBatch()
     df[which(df$batchid == id), "wait"] <- 0
-    df[which(df$batchid == id), "realStartDate"] <- get.date()
-    write.wait.batch(df = df)
+    df[which(df$batchid == id), "realStartDate"] <- getDate()
+    writeWaitBatch(df = df)
 }
 
-launch.wait.queue <- function(id) {
-    df <- get.wait.queue()
+launchWaitQueue <- function(id) {
+    df <- getWaitQueue()
     df[which(df$queueid == id), "wait"] <- 0
-    df[which(df$queueid == id), "realStartDate"] <- get.date()
-    write.wait.queue(df = df)
+    df[which(df$queueid == id), "realStartDate"] <- getDate()
+    writeWaitQueue(df = df)
 }
 
 # Add in files
-add.wait.batch <- function(batchid, queueid, group = NA, name, parallelizable, wait = 0, progress = 0, startDate = get.date(), realStartDate = get.date(), endDate = NA) {
+addWaitBatch <- function(batchid, queueid, group = NA, name, parallelizable, wait = 0, progress = 0, startDate = getDate(), realStartDate = getDate(), endDate = NA) {
     stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress), is.null))))
     stopifnot(class(parallelizable) == "logical")
     toInsert <- data.frame(batchid = batchid
@@ -104,13 +104,13 @@ add.wait.batch <- function(batchid, queueid, group = NA, name, parallelizable, w
                     , realStartDate = realStartDate
                     , endDate = as.character(endDate)
                     , stringsAsFactors = FALSE)
-    df <- get.wait.batch()
+    df <- getWaitBatch()
     df <- rbind(df, toInsert)
-    write.wait.batch(df = df)
+    writeWaitBatch(df = df)
 }
 
 #' @import testthat
-add.wait.queue <- function(queueid, group, name, wait = 0, startDate = get.date(), realStartDate = get.date()) {
+addWaitQueue <- function(queueid, group, name, wait = 0, startDate = getDate(), realStartDate = getDate()) {
     stopifnot(!any(unlist(lapply(list(queueid, name), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , group = group
@@ -120,13 +120,13 @@ add.wait.queue <- function(queueid, group, name, wait = 0, startDate = get.date(
                     , realStartDate = realStartDate
                     , stringsAsFactors = FALSE)
     expect_equal(sapply(toInsert, class), c("numeric", "character", "character", "numeric"))
-    df <- get.wait.queue()
+    df <- getWaitQueue()
     df <- rbind(df, toInsert)
-    write.wait.queue(df = df)
+    writeWaitQueue(df = df)
 }
 
 #' @import testthat
-add.historized.batch <- function(queueid, batchid, group, queuename, batchname, startDate, realStartDate, endDate = get.date()) {
+addHistorizedBatch <- function(queueid, batchid, group, queuename, batchname, startDate, realStartDate, endDate = getDate()) {
     stopifnot(!any(unlist(lapply(list(queueid, batchid, queuename, batchname, startDate, realStartDate, endDate)))))
     toInsert <- data.frame(queueid = queueid
                     , batchid = batchid
@@ -137,13 +137,13 @@ add.historized.batch <- function(queueid, batchid, group, queuename, batchname, 
                     , endDate = endDate
                     , stringsAsFactors = FALSE)
     expect_equal(sapply(toInsert, class), c("numeric", "numeric", "character", "character", "character", "character", "character", "character"))
-    df <- get.historized.batch()
+    df <- getHistorizedBatch()
     df <- rbind(df, toInsert)
-    write.historized.batch(df = df)
+    writeHistorizedBatch(df = df)
 }
 
 #' @import testthat
-add.historized.queue <- function(queueid, group, queuename, startDate, realStartDate, endDate = get.date()) {
+addHistorizedQueue <- function(queueid, group, queuename, startDate, realStartDate, endDate = getDate()) {
     stopifnot(!any(unlist(lapply(list(queueid, queuename, startDate, realStartDate, endDate)))))
     toInsert <- data.frame(queueid = queueid
                     , group = group
@@ -153,9 +153,9 @@ add.historized.queue <- function(queueid, group, queuename, startDate, realStart
                     , endDate = endDate
                     , stringsAsFactors = FALSE)
     expect_equal(sapply(toInsert, class), c("numeric", "numeric", "character", "character", "character", "character", "character", "character"))
-    df <- get.historized.queue()
+    df <- getHistorizedQueue()
     df <- rbind(df, toInsert)
-    write.historized.queue(df = df)
+    writeHistorizedQueue(df = df)
 }
 
 

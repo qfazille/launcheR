@@ -2,7 +2,7 @@ source("./R/zzz.R")
 source("./R/getdata.R")
 
 
-# create get.wait.queue
+# create getWaitQueue
 df <- data.frame(queueid = numeric()
                  , group = character()
                  , name = character()
@@ -13,7 +13,7 @@ df <- data.frame(queueid = numeric()
                  , stringsAsFactors = FALSE)
 saveRDS(object = df, file = "./dev/waitqueue.RDS")
 
-# create get.wait.batch
+# create getWaitBatch
 df <- data.frame(batchid = numeric()
                 , queueid = numeric()
                 , group = character()
@@ -27,7 +27,7 @@ df <- data.frame(batchid = numeric()
                 , stringsAsFactors = FALSE)
 saveRDS(object = df, file = "./dev/waitbatch.RDS")
 
-# create get.historized.batch
+# create getHistorized.batch
 df <- data.frame(queueid = numeric()
                  , batchid = numeric()
                  , group = character()
@@ -39,7 +39,7 @@ df <- data.frame(queueid = numeric()
                  , stringsAsFactors = FALSE)
 saveRDS(object = df, file = "./dev/historizedbatch.RDS")
 
-# create get.historized.queue
+# create getHistorized.queue
 df <- data.frame(queueid = numeric()
                  , group = character()
                  , queuename = character()

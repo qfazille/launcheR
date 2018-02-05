@@ -63,7 +63,7 @@ setMethod(f = "script", signature= "batch", definition = function(object) {
     # Set & or not
     if (object@wait.before.next) ampersand <- NULL else ampersand <- "&"
     launch      <- paste(rscript(), object@path, ampersand)
-    releaselock <- paste(rscript(), "launcheR:::release.batch()")
+    releaselock <- paste(rscript(), "launcheR:::releaseBatch()")
     lines <- paste(wait, setrdata, setrenviron, launch, releaselock, sep = linebreak())
     return(lines)
 })

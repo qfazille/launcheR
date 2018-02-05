@@ -1,6 +1,6 @@
 library(launcheR)
 
-get.wait.batch()
+getWaitBatch()
 
 # 1st batch
 Sys.setenv("LR_Q" = "Q1")
@@ -8,22 +8,22 @@ Sys.setenv("LR_QID" = "1")
 Sys.setenv("LR_G" = "A")
 Sys.setenv("LR_B" = "B1")
 Sys.setenv("LR_BPAR" = "TRUE")
-wait.batch()
-get.wait.batch()
+waitBatch()
+getWaitBatch()
 
 # 2nd batch
 Sys.setenv("LR_B" = "B1")
 Sys.setenv("LR_BPAR" = "FALSE")
-wait.batch()
-get.wait.batch()
+waitBatch()
+getWaitBatch()
 
 # etc...
 Sys.setenv("LR_B" = "B1")
 Sys.setenv("LR_BPAR" = "FALSE")
-wait.batch()
-get.wait.batch()
+waitBatch()
+getWaitBatch()
 
-df <- get.wait.batch()
+df <- getWaitBatch()
 df2 <- df %>% group_by(batchid, queueid, group, name, parallelizable, progress) %>% summarise(wait_c = paste(wait, collapse = ",")) %>% ungroup() %>% select(batchid, name, wait = wait_c)
 df2[] <- lapply(df2, as.character)
 
