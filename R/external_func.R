@@ -1,3 +1,9 @@
+# function to create queue
+createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), group = NULL, folder = tempdir(), logdir = NULL, clean = TRUE) {
+    new(Class = "queue", name = name, group = group, folder = folder, logdir = logdir, clean = clean)
+}
+
+
 # external functions
 # to set in class queue
 launch <- function(object) {
@@ -7,15 +13,13 @@ launch <- function(object) {
     if (is.null(object@batchs)) stop("Queue doesn't have any batch")
     
     # check if already exists (with TS should not append)
-    temp_folder <- tmpFolder(queue_name = object@name) 
-    folder <- file.path(object@folder, temp_folder)
-    if (file.exists(folder)) stop(paste("Already a folder named", folder))
+    if (file.exists(object@folder)) stop(paste("Already a folder named", folder))
     
-    # create folder
-    dir.create(folder)
+    # create subfolder
+    dir.create(object@folder)
     
-    # Set this folder in object (because used in runInit())
-    object@folder <- folder
+    # if logdir doesn't exist create it
+    if (!file.exists(object@logdir)) dir.create(object@logdir)
     
     # Initialize run.[sh|bat] with first line waitQueue
     runFile <- runInit(queue = object)
