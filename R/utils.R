@@ -94,7 +94,7 @@ redirect_log <- function() {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        return(">")
+        return(">>")
     }
 }
 
@@ -121,9 +121,9 @@ launchFile <- function(runFile = NULL) {
 }
 
 # Name of temp folder
-tmpFolder <- function(queue_name = NULL) {
-    stopifnot(!is.null(queue_name))
-    return(paste(object@name, "LR", getTS(), sep = "_")
+tmpFolder <- function(name = NULL) {
+    stopifnot(!is.null(name))
+    return(paste(name, "LR", getTS(), sep = "_"))
 }
 
 # Is temp folder
@@ -132,3 +132,23 @@ isTmpFolder <- function(folder = NULL) {
     res <- grep("LR_[0-9]{8}_[0-9]{6}", folder, perl=TRUE)
     if (length(res) == 0) return(FALSE) else return(TRUE)
 }
+
+# Remove illegal character from string
+validName <- function(name = NULL) {
+    stopifnot(!is.null(name))
+    # iconv remove accents
+    # make.names remove non character or number
+    x <- iconv(make.names(name), to='ASCII//TRANSLIT')
+    # Remove dots
+    gsub(".", "", x, fixed = TRUE)
+}
+
+# check batch path
+checkBatchPath <- function(path = NULL) {
+    stopifnot(!is.null(path))
+    # extension must be .R
+    stopifnot(tools::file_ext(path) == "R")
+    if (file.access(path, mode = 0) == -1) stop("Filepath must exists")
+    return(TRUE)
+}
+

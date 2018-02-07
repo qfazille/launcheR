@@ -38,5 +38,5 @@ getBatchidFromRank <- function(batch_rank = NULL, mandatory = TRUE) {
     if (is.null(batch_rank)) stop("Rank must be specified")
     val <- as.numeric(Sys.getenv(paste0("LR_BR", batch_rank)))
     if (is.na(val)) val <- NULL
-    if (mandatory & is.null(val)) stop(paste0("environment variable LR_BR", batch_rank, " cannot be null") else return(val)
+    if (mandatory & is.null(val)) stop(paste0("environment variable LR_BR", batch_rank, " cannot be null")) else return(val)
 }
