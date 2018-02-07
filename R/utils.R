@@ -36,10 +36,11 @@ rscript <- function() {
     }
 }
 
-rscriptOptions <- function(execute = FALSE, restore = FALSE) {
+rscriptOptions <- function(execute = FALSE, restore = FALSE, nosave = TRUE) {
     opt <- rscript()
     if (execute) opt <- paste(opt, "-e")
     if (restore) opt <- paste(opt, "--restore")
+    if (nosave)  opt <- paste(opt, "--no-save")
     return(opt)
 }
 
@@ -84,6 +85,50 @@ getDate <- function() {
     format(Sys.time(), format="%Y-%m-%d %H:%M:%S")
 }
 
+# get a timestamp
 getTS <- function() {
     format(Sys.time(), format="%Y%m%d_%H%M%S")
+}
+
+redirect_log <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return(">")
+    }
+}
+
+# Gather several lines into one
+gatherCmd <- function(..., background = FALSE) {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        line_ <- paste0("(", paste(..., sep = ";\\\n"), ")") 
+        if (background) line_ <- paste(line_, "&")
+        return(line_)
+    }
+}
+
+# Set cmd to pass to system function
+launchFile <- function(runFile = NULL) {
+    stopifnot(!is.null(runFile))
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        line_ <- paste0(runFile, "&")
+        return(line_)
+    }
+}
+
+# Name of temp folder
+tmpFolder <- function(queue_name = NULL) {
+    stopifnot(!is.null(queue_name))
+    return(paste(object@name, "LR", getTS(), sep = "_")
+}
+
+# Is temp folder
+isTmpFolder <- function(folder = NULL) {
+    stopifnot(!is.null(folder))
+    res <- grep("LR_[0-9]{8}_[0-9]{6}", folder, perl=TRUE)
+    if (length(res) == 0) return(FALSE) else return(TRUE)
 }

@@ -7,7 +7,9 @@ setClass(
         path = "character",
         params = "ListOrNULL",
         parallelizable = "logical",
-        waitBeforeNext = "logical"
+        waitBeforeNext = "logical",
+        logfile = "character",
+        Rank = "numeric"
     ),
     prototype = prototype(
         name = NULL,
