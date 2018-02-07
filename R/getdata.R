@@ -127,7 +127,7 @@ addWaitQueue <- function(queueid, group, name, wait = 0, startDate = getDate(), 
 
 #' @import testthat
 addHistorizedBatch <- function(queueid, batchid, group, queuename, batchname, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, batchid, queuename, batchname, startDate, realStartDate, endDate)))))
+    stopifnot(!any(unlist(lapply(list(queueid, batchid, queuename, batchname, startDate, realStartDate, endDate), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , batchid = batchid
                     , group = group
@@ -144,7 +144,7 @@ addHistorizedBatch <- function(queueid, batchid, group, queuename, batchname, st
 
 #' @import testthat
 addHistorizedQueue <- function(queueid, group, queuename, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, queuename, startDate, realStartDate, endDate)))))
+    stopifnot(!any(unlist(lapply(list(queueid, queuename, startDate, realStartDate, endDate)), is.null)))
     toInsert <- data.frame(queueid = queueid
                     , group = group
                     , queuename = queuename

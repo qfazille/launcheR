@@ -24,36 +24,77 @@ runInit <- function(object) {
     return(runFile)
 }
 
+# batch method
 runBatch <- function(batch, runFile) {
         
         # Get info from batch object
         params <- batch@params
-        rank_  <- batch@rank
+        Rank   <- batch@Rank
         
+        # Get folder
+        folder <- dirname(runFile)
+        
+        # If params add 'launcheR:::setRData'
         if (!is.null(params)) {
             # Create RData file if params
             env <- new.env()
             sapply(names(params), function(x) { assign(x = x, value = params[[x]], envir = env)})
-            RData_file <- file.path(folder, paste0("params", rank_, ".RData"))
+            RData_file <- file.path(folder, paste0("params", Rank, ".RData"))
             save(list = ls(envir = env), envir = env, file = RData_file)
             # Add line setRdata
-            runSetRData(runFile = runFile, file = RData_file)
+            runSetRData(runFile = runFile, file_ = RData_file)
         }
-        # add line waitBatch + Rscript batch
-        runWaitBatch(batch = batch, folder = folder)
+        # add line 'launcheR:::waitBatch' + Rscript batch
+        runWaitBatch(batch = batch, runFile = runFile)
 }
 
+# batch method
 # set this in batch class
-runWaitBatch <- function(folder, batch) {
-    # Don't forget to set sleep 1 at least if waitBeforeNew = FALSE (cf launcheR/dev/tests/run.sh)
-    # Maybe get a method from batch class to get lines to write
-    # need :
-    #name = batch@name, bpar = batch@parallelizable, path = batch@path, waitBeforeNext = batch@waitBeforeNext
-}
-
-runSetRData <- function(runFile, file) {
-    stopifnot(!any(unlist(lapply(list(runFile, file)))))
-    cmd <- paste0("'launcheR:::setRData(file=\"", file, "\")' ", nullRedirection())
+runWaitBatch <- function(batch, runFile) {
+    # check inputs
+    stopifnot(!any(unlist(lapply(list(batch, runFile), is.null))))
+    
+    # Add 'launcheR:::waitBatch'
+    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\")' ", nullRedirection())
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
+    
+    # Add 'Rscript /path/batch' & 'launcheR:::releaseBatch' in the same line + & if waitBeforeNext = FALSE
+    cmd1 <- paste(rscriptOptions(), batch@path, redirect_log(), batch@logfile)
+    cmd2 <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\")' "))
+    line_ <- gatherCmd(cmd1, cmd2, background = !batch@waitBeforeNext)
+    cat(line_, file = runFile, append = TRUE)
+    
+    # Add sleep
+    cmd <- getSleep()
+    cat(cmd, file = runFile, append = TRUE)
+}
+
+# Add launcheR:::setRData
+runSetRData <- function(runFile, file_) {
+    stopifnot(!any(unlist(lapply(list(runFile, file_), is.null))))
+    cmd <- paste0("'launcheR:::setRData(file=\"", file_, "\")' ", nullRedirection())
+    line_ <- paste(rscriptOptions(execute=TRUE), cmd)
+    cat(line_, file = runFile, append = TRUE)
+}
+
+# Add launcheR:::release
+runReleaseQueue <- function(runFile = NULL) {
+    stopifnot(!is.null(runFile))
+    cmd <- paste0("'launcheR:::releaseQueue()' ", nullRedirection())
+    cat(cmd, file = runFIle, append = TRUE)
+}
+
+# Add remove temp folder
+cleanFolder <- function(folder = NULL, runFile = NULL) {
+    stopifnot(!any(unlist(lapply(list(folder, runFile), is.null))))
+    # Security not to rm something else that a QueueTemporary folder
+    if (isTmpFolder(folder)) {
+        if (sysname() == "Windows") {
+            return(NULL)
+        } else if (sysname() == "Unix") {
+            cmd <- paste("rm -R", folder)
+        }
+        cat(cmd, file = runFile, append = TRUE)
+    }
 }

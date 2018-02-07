@@ -23,7 +23,7 @@ setMethod(f = "initialize",
     definition = function(object, name = NULL, group = NULL, folder = NULL, batchs = NULL) {
         
         # Check that queue name not already running
-
+        # Check there is no / or \ in queue name (because used in path)
         object@name      <- name
         object@group     <- group
         object@folder    <- folder

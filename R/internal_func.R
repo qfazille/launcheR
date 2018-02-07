@@ -35,7 +35,7 @@ waitQueue <- function(queue_name, group){
 }
 
 #' @export
-waitBatch <- function(batch_name, batch_par) {
+waitBatch <- function(batch_name, batch_par, batch_rank) {
     
     # input
     batch_par <- as.logical(batch_par)
@@ -52,9 +52,10 @@ waitBatch <- function(batch_name, batch_par) {
     # Get data
     df <- getWaitBatch()
     
-    # Write new batchid
+    # Write new batchid (I don't think LR_BID will exists anymore..., to be check later)
     newid <- newidBatch()
     writeRenviron(prefix = "LR_BID", value = newid)
+    writeRenviron(prefix = paste0("LR_BR", batch_rank), value = newid)
     
     if (length(which(df$name == batch_name)) == 0) {
         addWaitBatch(batchid = newid
@@ -98,8 +99,9 @@ waitBatch <- function(batch_name, batch_par) {
 }
 
 #' @export
-releaseBatch <- function() {
-    batch_id <- getBatchid()
+releaseBatch <- function(batch_rank) {
+    stopifnot(!is.null(batch_rank))
+    batch_id <- getBatchidFromRank(batch_rank)
     df <- getWaitBatch()
     # Set wait to -1 (means batch not running anymore but queue still running)
     df[which(df$batchid == batch_id), "wait"]       <- -1

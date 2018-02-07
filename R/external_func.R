@@ -6,12 +6,16 @@ launch <- function(object) {
     # check queue has at least one batch
     if (is.null(object@batchs)) stop("Queue doesn't have any batch")
     
-    # check if already exists (with TS should not appear)
-    folder <- file.path(object@folder, paste0(object@name, getTS()))
+    # check if already exists (with TS should not append)
+    temp_folder <- tmpFolder(queue_name = object@name) 
+    folder <- file.path(object@folder, temp_folder)
     if (file.exists(folder)) stop(paste("Already a folder named", folder))
     
     # create folder
     dir.create(folder)
+    
+    # Set this folder in object (because used in runInit())
+    object@folder <- folder
     
     # Initialize run.[sh|bat] with first line waitQueue
     runFile <- runInit(queue = object)
@@ -27,5 +31,16 @@ launch <- function(object) {
         #   - add line waitBatch in run.sh
         runBatch(batch = object@batchs[[i]], runFile = runFile)
     }
-
+    
+    # Add releaseQueue
+    runReleaseQueue(runFile = runFile)
+    
+    # Add clean directory
+    if (object@clean) {
+        cleanFolder(folder = folder, runFile = runFile)
+    }
+    
+    # Launch file in background
+    # cmd <- launchFile(runFile = runFile)
+    # system(cmd)
 }
