@@ -1,17 +1,17 @@
 #' @export
-waitQueue <- function(queue_name, group){
-    
+waitQueue <- function(queue_name, group = NULL){
+
     # Write queue_name & group in Renviron
     writeRenviron(prefix = "LR_Q", value = queue_name)
-    writeRenviron(prefix = "LR_G", value = group)
-    
+    if (!is.null(group)) writeRenviron(prefix = "LR_G", value = group)
+
     # Get data
     df <- getWaitQueue()
-    
+
     # Write new queueid
     newid <- newidQueue()
     writeRenviron(prefix = "LR_QID", value = newid)
-    
+
     # if no group, then no check
     if (is.null(group)) {
         addWaitQueue(queueid = newid, group = NA, name = queue_name, wait = 0)
@@ -36,27 +36,27 @@ waitQueue <- function(queue_name, group){
 
 #' @export
 waitBatch <- function(batch_name, batch_par, batch_rank) {
-    
+
     # input
     batch_par <- as.logical(batch_par)
-    
+
     # Get env
     queue_name  <- getQueuename()
     queue_id    <- getQueueid()
-    queue_group <- getGroup()
-    
+    queue_group <- getGroup(mandatory = FALSE)
+
     # Write queue_name & group in Renviron
     writeRenviron(prefix = "LR_B", value = batch_name)
     writeRenviron(prefix = "LR_BPAR", value = batch_par)
-    
+
     # Get data
     df <- getWaitBatch()
-    
+
     # Write new batchid (I don't think LR_BID will exists anymore..., to be check later)
     newid <- newidBatch()
     writeRenviron(prefix = "LR_BID", value = newid)
     writeRenviron(prefix = paste0("LR_BR", batch_rank), value = newid)
-    
+
     if (length(which(df$name == batch_name)) == 0) {
         addWaitBatch(batchid = newid
             , queueid = queue_id

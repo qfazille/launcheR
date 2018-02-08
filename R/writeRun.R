@@ -12,6 +12,12 @@ runInit <- function(object) {
     # write header
     cat(runHeader(), file = runFile, append = TRUE)
     
+    # write cd
+    cat(runCD(folder = object@folder), file = runFile, append = TRUE)
+    
+    # init .Renviron
+    cat(runRenviron(), file = runFile, append = TRUE)
+    
     # Write in runFile
     if (is.null(object@group)) {
         cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\")' ", nullRedirection())
@@ -21,6 +27,10 @@ runInit <- function(object) {
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     
     cat(line_, file = runFile, append = TRUE)
+    
+    # Make file executable
+    executableFile(runFile = runFile)
+    
     return(runFile)
 }
 
@@ -82,7 +92,8 @@ runSetRData <- function(runFile, file_) {
 runReleaseQueue <- function(runFile = NULL) {
     stopifnot(!is.null(runFile))
     cmd <- paste0("'launcheR:::releaseQueue()' ", nullRedirection())
-    cat(cmd, file = runFIle, append = TRUE)
+    line_ <- paste(rscriptOptions(execute=TRUE), cmd)
+    cat(line_, file = runFile, append = TRUE)
 }
 
 # Add remove temp folder
