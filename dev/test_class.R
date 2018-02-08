@@ -1,14 +1,28 @@
 source("./R/utils.R")
-source("./dev/batch.R")
-source("./dev/queue.R")
+source("./R/getdata.R")
+source("./R/getenv.R")
+source("./R/internal_func.R")
+source("./R/external_func.R")
+source("./R/newid.R")
+source("./R/wait.R")
+source("./R/writeRun.R")
+source("./R/batch.R")
+source("./R/queue.R")
 
-q <- new(Class = "queue")
-q <- new(Class = "queue", name = "firstQ")
-q <- new(Class = "queue", folder = "/home/qfazilleau/test", clean = FALSE)
-q <- new(Class = "queue", folder = "/home/qfazilleau/test", logdir = "/tmp/log", clean = FALSE)
-q <- new(Class = "queue", group = "demo")
+setwd("/home/qfazilleau/github/launcheR")
 
-b <- new(Class = "batch", Rank = 1, logfile = "/tmp/logfile.log", path = "/home/qfazilleau/github/launcheR/dev/tests/batch1.R")
+q <- createQueue(folder = ".")
 
 q <- addBatch(object = q, path = "./dev/tests/batch1.R")
 q <- addBatch(object = q, path = "./dev/tests/batch2.R")
+launch(q)
+launcheR:::cleanQ(q)
+
+launcheR:::getWaitQueue()
+launcheR:::getWaitBatch()
+
+
+launcheR:::waitQueue(queue_name="queue1b4d66b258b70")
+launcheR:::waitBatch(batch_name="batch1", batch_par="TRUE", batch_rank="1")
+
+

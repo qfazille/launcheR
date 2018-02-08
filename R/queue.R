@@ -48,6 +48,7 @@ setMethod(f = "initialize"
             .Object@batchs    <- list()
             
             # Create the subfolder under folder
+            folder <- normalizePath(folder)
             temp_folder <- tmpFolder(name = .Object@name) 
             subfolder <- file.path(folder, temp_folder)
             .Object@folder    <- subfolder
@@ -70,7 +71,7 @@ setMethod(f = "initialize"
 #' @param object An object of class queue.
 #' @param ... Others arguments from specific methods.
 #' @exportMethod addBatch
-setGeneric(name="addBatch",def=function(object,...)			{standardGeneric("addBatch")})
+setGeneric(name="addBatch",def=function(object,...)     {standardGeneric("addBatch")})
 
 
 #' @rdname addBatch
@@ -115,4 +116,71 @@ setMethod(f = "addBatch", signature = "queue", definition = function(object, nam
     # Add batch to queue
     object@batchs[[Rank]] <- batch
     return(object)
+})
+
+
+#' launch
+#'
+#' Launch a queue
+#' @exportMethod launch
+setGeneric(name="launch",def=function(object)   {standardGeneric("launch")})
+
+#' @rdname launch
+#' @examples 
+#' \dontrun{
+#' to be seen later
+#' }
+setMethod(f = "launch", signature = "queue", definition = function(object) {
+    # check queue has at least one batch
+    if (is.null(object@batchs)) stop("Queue doesn't have any batch")
+    
+    # check if already exists (with TS should not append)
+    if (file.exists(object@folder)) stop(paste("Already a folder named", folder))
+    
+    # create subfolder
+    dir.create(object@folder)
+    
+    # if logdir doesn't exist create it
+    if (!file.exists(object@logdir)) dir.create(object@logdir)
+    
+    # Initialize run.[sh|bat] with first line waitQueue
+    runFile <- runInit(object = object)
+    
+    # Loop on batch
+    #   - Create RData file
+    #   - Add in run.[sh|bat] the lines
+    for (i in 1:length(object@batchs)) {
+        # This method does :
+        #   - if params :
+        #       - creates RData
+        #       - add lines in run.sh of setRdata
+        #   - add line waitBatch in run.sh
+        runBatch(batch = object@batchs[[i]], runFile = runFile)
+    }
+    
+    # Add releaseQueue
+    runReleaseQueue(runFile = runFile)
+    
+    # Add clean directory
+    if (object@clean) {
+        cleanFolder(folder = object@folder, runFile = runFile)
+    }
+    
+    # Launch file in background
+    cmd <- launchFile(runFile = runFile)
+    system(cmd)
+})
+
+setGeneric(name="cleanQ",def=function(object)   {standardGeneric("cleanQ")})
+setMethod(f = "cleanQ", signature = "queue", definition = function(object) {
+    if (isTmpFolder(object@folder)) {
+        if (file.exists(object@folder)) {
+            unlink(object@folder, recursive = TRUE)
+            message(paste("Remove folder", object@folder))
+        } else {
+            message(paste("Folder", object@folder, "doesn't exists"))
+        }
+    } else {
+        message(paste("Folder", object@folder, "suspicious"))
+    }
 })

@@ -36,7 +36,7 @@ rscript <- function() {
     }
 }
 
-rscriptOptions <- function(execute = FALSE, restore = FALSE, nosave = TRUE) {
+rscriptOptions <- function(execute = FALSE, restore = FALSE, nosave = FALSE) {
     opt <- rscript()
     if (execute) opt <- paste(opt, "-e")
     if (restore) opt <- paste(opt, "--restore")
@@ -47,9 +47,9 @@ rscriptOptions <- function(execute = FALSE, restore = FALSE, nosave = TRUE) {
 # Null redirection
 nullRedirection <- function() {
     if (sysname() == "Windows") {
-        return("> NUL")
+        return(NULL)
     } else if (sysname() == "Unix") {
-        return("> /dev/null")
+        return(paste("> /dev/null", linebreak()))
     }
 }
 
@@ -67,7 +67,26 @@ runHeader <- function() {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        return("#!/bin/bash")
+        return(paste("#!/bin/bash", linebreak()))
+    }
+}
+
+# change directory at startup
+runCD <- function(folder) {
+    stopifnot(!is.null(folder))
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return(paste("cd", folder, linebreak()))
+    }
+}
+
+# init .Renviron
+runRenviron <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return(paste("touch .Renviron", linebreak()))
     }
 }
 
@@ -76,7 +95,7 @@ getSleep <- function() {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        return("sleep 1")
+        return(paste("sleep 2", linebreak()))
     }
 }
 
@@ -103,8 +122,8 @@ gatherCmd <- function(..., background = FALSE) {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        line_ <- paste0("(", paste(..., sep = ";\\\n"), ")") 
-        if (background) line_ <- paste(line_, "&")
+        line_ <- paste0("(", paste(..., sep = " ; \\\n"), ")") 
+        if (background) line_ <- paste(line_, "&", linebreak()) else line_ <- paste(line_, linebreak())
         return(line_)
     }
 }
@@ -115,7 +134,7 @@ launchFile <- function(runFile = NULL) {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        line_ <- paste0(runFile, "&")
+        line_ <- paste(runFile, "&")
         return(line_)
     }
 }
@@ -152,3 +171,7 @@ checkBatchPath <- function(path = NULL) {
     return(TRUE)
 }
 
+executableFile <- function(runFile) {
+    stopifnot(!is.null(runFile))
+    Sys.chmod(runFile, mode = "0750", use_umask = TRUE)
+}
