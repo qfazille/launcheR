@@ -13,7 +13,7 @@
 #' q <- createQueue()
 #' }
 #' @importFrom methods new
-createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), group = NULL, folder = tempdir(), logdir = NULL, clean = TRUE, tmpdir = NULL) {
+createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), group = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) {
     new(Class = "queue", name = name, group = group, folder = folder, logdir = logdir, clean = clean, tmpdir = tmpdir)
 }
 
