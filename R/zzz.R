@@ -12,6 +12,7 @@ char2factors <- function(x) {
     x
 }
 
+#' @importFrom utils type.convert
 setNumOrFact <- function(x) {
     rapply(x, utils::type.convert, classes = "character", how = "replace")
 }

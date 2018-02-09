@@ -18,3 +18,22 @@ createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")
 }
 
 
+#' @rdname reset
+#' @title reset
+#' @description Reset all waiting queue/batchs information.\cr
+#'     This function should be use in case a batch or queue is stuck in the progress batchs.\cr
+#'     That can happen when a process has been killed forcefully.
+#' @param historized Logical If historized queue/batchs must be also reset.
+#' @export
+#' @examples
+#' \dontrun{
+#' reset()
+#' }
+reset <- function(historized = FALSE) {
+    getWaitQueue(reset = TRUE)
+    getWaitBatch(reset = TRUE)
+    if (historized) {
+        getHistorizedBatch(reset = TRUE)
+        getHistorizedQueue(reset = TRUE)
+    }
+}

@@ -47,7 +47,7 @@ setMethod(f = "initialize"
             # Create the subfolder under folder
             if (is.null(folder) & !is.null(tmpdir)) {
                 folder <- tmpdir 
-            } else if (is.null(folder) & is.null(tmpdir)) {
+            } else {
                 folder <- tempdir()
             }
             folder <- normalizePath(folder)
@@ -63,7 +63,7 @@ setMethod(f = "initialize"
             }
             
             # If tmpdir specified then check not in /tmp folder
-            if (!is.null(tmpdir) & folderInTmp(tmpdir)) stop("If tmpdir specified, then should not be in /tmp/* folder")
+            if (!is.null(tmpdir)) if (folderInTmp(tmpdir)) stop("If tmpdir specified, then should not be in /tmp/* folder")
             .Object@tmpdir <- tmpdir
             
             validObject(.Object)
