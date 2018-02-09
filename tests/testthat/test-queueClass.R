@@ -1,7 +1,3 @@
-print("################################################################")
-print(getwd())
-print("################################################################")
-
 context("queue class - init")
 
 run_test <- function(obj, types = c("name", "group", "folder", "tmpdir", "logdir")) {

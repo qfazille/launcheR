@@ -3,6 +3,7 @@
 export(addBatch)
 export(createQueue)
 export(launch)
+export(progress)
 export(reset)
 exportClasses(batch)
 exportClasses(queue)

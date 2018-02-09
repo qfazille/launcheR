@@ -36,4 +36,33 @@ reset <- function(historized = FALSE) {
         getHistorizedBatch(reset = TRUE)
         getHistorizedQueue(reset = TRUE)
     }
+    return(TRUE)
+}
+
+#' @rdname progress
+#' @title progress
+#' @description Increase progress of a batch.
+#' @param percentage Numeric Percentage of progress.
+#' @export
+#' @examples
+#' \dontrun{
+#' progress(50)
+#' }
+progress <- function(percentage = NULL) {
+    if (is.null(percentage)) {
+        warning("Cannot update progress because param percentage is null")
+    } else if (!is.numeric(percentage)) {
+        warning("Cannot update progress because param percentage is not numeric")
+    } else {
+        BID <- getBatchid(mandatory = FALSE)
+        QID <- getQueueid(mandatory = FALSE)
+        if (!is.null(BID) & !is.null(QID)) {
+            # update progress
+            df <- getWaitBatch()
+            df[which(df$batchid == BID & df$queueid == QID), "progress"]   <- percentage
+            writeWaitBatch(df = df)
+        } else {
+            warning("BID and/or QID not found")
+        }
+    }
 }
