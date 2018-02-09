@@ -11,21 +11,21 @@ This class is used to store follwing slot
 \section{Slots}{
 
 \describe{
-\item{\code{name}}{Character Contains name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))}
+\item{\code{name}}{Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))}
 
-\item{\code{group}}{Character Contains the group name the queue belongs to. (Default NULL)}
+\item{\code{group}}{Character Name of the group the queue belongs to. (Default NULL)}
 
-\item{\code{folder}}{Character Contains path to a folder that will contains the working directory folder. (Default tempdir())}
+\item{\code{folder}}{Character Path to a folder that will contains the working directory folder. (Default tempdir())}
 
-\item{\code{batchs}}{List Contains batch S4 objects. (Default NULL)}
+\item{\code{batchs}}{List Batch S4 objects. (Default NULL)}
+
+\item{\code{logdir}}{Character Path to the folder that will contains logs file. (By default in folder)}
+
+\item{\code{clean}}{Logical Whether or not the working directory folder should be removed. (Default TRUE)}
+
+\item{\code{tmpdir}}{Character If use through RSConnect then you must define a tmpdir not in /tmp/*. (Default TRUE)}
 }}
 
-\examples{
-showClass("queue")
-
-## Methods available for this class
-showMethods(classes="queue")
-}
 \author{
 Quentin Fazilleau
 }

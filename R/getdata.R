@@ -21,7 +21,6 @@ fileHistorizedQueue <- function() {
     file.path(datafolder(), "historizedqueue.RDS")
 }
 
-#' @export
 getWaitQueue <- function() {
     file_ <- fileWaitQueue()
     if (file.exists(file_)) {
@@ -40,7 +39,6 @@ getWaitQueue <- function() {
     return(df)
 }
 
-#' @export
 getWaitBatch <- function(with.done = TRUE) {
     file_ <- fileWaitBatch()
     if (file.exists(file_)) {
@@ -63,7 +61,6 @@ getWaitBatch <- function(with.done = TRUE) {
     return(df)
 }
 
-#' @export
 getHistorizedBatch <- function() {
     file_ <- fileHistorizedBatch()
     if (file.exists(file_)) {
@@ -83,7 +80,6 @@ getHistorizedBatch <- function() {
     return(df)
 }
 
-#' @export
 getHistorizedQueue <- function() {
     file_ <- fileHistorizedQueue()
     if (file.exists(file_)) {
@@ -102,36 +98,30 @@ getHistorizedQueue <- function() {
 }
 
 
-# write files
-#' @import testthat
 writeWaitQueue <- function(df) {
     df <- factors2char(df)
     expect_equal(sapply(df, class), sapply(getWaitQueue(), class))
     saveRDS(object = df, file = fileWaitQueue())
 }
 
-#' @import testthat
 writeWaitBatch <- function(df) {
     df <- factors2char(df)
     expect_equal(sapply(df, class), sapply(getWaitBatch(), class))
     saveRDS(object = df, file = fileWaitBatch())
 }
 
-#' @import testthat
 writeHistorizedBatch <- function(df) {
     df <- factors2char(df)
     expect_equal(sapply(df, class), sapply(getHistorizedBatch(), class))
     saveRDS(object = df, file = fileHistorizedBatch())
 }
 
-#' @import testthat
 writeHistorizedQueue <- function(df) {
     df <- factors2char(df)
     expect_equal(sapply(df, class), sapply(getHistorizedQueue(), class))
     saveRDS(object = df, file = fileHistorizedQueue())
 }
 
-# Launch batch or queue
 launchWaitBatch <- function(id) {
     df <- getWaitBatch()
     df[which(df$batchid == id), "wait"] <- 0

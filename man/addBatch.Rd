@@ -3,6 +3,7 @@
 \docType{methods}
 \name{addBatch}
 \alias{addBatch}
+\alias{addBatch}
 \alias{addBatch,queue-method}
 \title{addBatch}
 \usage{
@@ -13,27 +14,32 @@ addBatch(object, ...)
   logfile = NULL)
 }
 \arguments{
-\item{object}{An object of class queue.}
+\item{object}{An object of class queue}
 
-\item{...}{Others arguments from specific methods.}
+\item{...}{Others arguments from specific methods}
 
-\item{name}{Character Contains alias of the batch. (Default basename(batch@path))}
+\item{name}{Character Alias of the batch. (Default basename(batch@path))}
 
-\item{path}{Character Contains the path to the R batch. (Mandatory)}
+\item{path}{Character Path to the R batch. (Mandatory)}
 
-\item{params}{Named list Contains the variable to be transfered to batch. (Default NULL)}
+\item{params}{Named list that contains the variable to be transfered to batch. (Default NULL)}
 
 \item{parallelizable}{Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)}
 
 \item{waitBeforeNext}{Logical If queue can launch next batch while this one. (Default TRUE)}
 
-\item{logfile}{Character Contains path to file that contains batch output. (Default queue@logfolder/batch@name.log)}
+\item{logfile}{Character Path to file that contains batch output. (Default queue@logfolder/batch@name.log)}
 }
 \description{
 Add batch to a queue
 }
 \examples{
 \dontrun{
-to be seen later
+q <- createQueue()
+q <- addBatch(q, "/path/batch.R")
+launch(q)
 }
+}
+\author{
+Quentin Fazilleau
 }

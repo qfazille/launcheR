@@ -36,6 +36,7 @@ setClass(
     )
 )
 
+#' @importFrom methods validObject
 setMethod(f = "initialize"
     , signature = "batch"
     , definition = function(.Object
