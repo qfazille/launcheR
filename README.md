@@ -1,49 +1,39 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
-
-# launcheR
+launcheR
+========
 
 The goal of launcheR is to easily launch R scripts with 2 available features :
 
-1. Waiting queue management
-    * `queue` can belong to a group. A group can run only one queue at once.
-    * A `batch` can be parallelizable among all groups or not
-    * *"first come, first served"*, then `queue` or `batch` are set in a waiting queue and launch ASAP.
-2. Easy set of parameters
-    * No more trouble with `args` in `Rscript`
-    * All class can be set as parameters
+1.  Waiting queue management
+    -   `queue` can belong to a group. A group can run only one queue at once.
+    -   A `batch` can be parallelizable among all groups or not
+    -   *"first come, first served"*, then `queue` or `batch` are set in a waiting queue and launch ASAP.
 
-**NB : ** `Rscript` is run in background, you get your prompt back `r emo::ji("smile")`
+2.  Easy set of parameters
+    -   No more trouble with `args` in `Rscript`
+    -   All class can be set as parameters
 
+**NB : ** `Rscript` is run in background, you get your prompt back 😄
 
-## Installation
+Installation
+------------
 
 You can install launcheR from github with:
 
-```{r gh-installation, eval = FALSE}
+``` r
 # install.packages("devtools")
 devtools::install_github("qfazille/launcheR")
 ```
 
 The management of waiting queue & waiting batch can be shared by multiple users if you all use the same machine.
 
-
-## Basic example
+Basic example
+-------------
 
 This creates a queue containing 2 batchs
 
-```{r basic_example, eval = FALSE}
+``` r
 library(launcheR)
 
 # create queue
@@ -57,11 +47,12 @@ q <- add.batch(queue = q, path = "/path/to/script2.R")
 launch.queue(q)
 ```
 
-## Using arguments on a batch
+Using arguments on a batch
+--------------------------
 
 Add a batch with arguments (parameters)
 
-````{r args_example, eval = FALSE}
+``` r
 # Some random values in params list (must be named)
 username <- "mylogin"
 country <- "france"
@@ -73,15 +64,16 @@ params <- list(username = username, country = country, age = age, other = other)
 
 # Add batch script1.R with those parameters
 q <- add.batch(queue = q, path = "/path/to/script1.R", params = params)
+```
 
-````
-
-## Launch queue on same group
+Launch queue on same group
+--------------------------
 
 **NB : ** Both users are on the same machine
 
 **user1**
-````{r group_example, eval = FALSE}
+
+``` r
 library(launcheR)
 
 # create queue on group 'demo'
@@ -93,10 +85,11 @@ q <- add.batch(queue = q, path = "./script2.R")
 
 # Launch
 launch.queue(q)
-````
+```
 
 **user2**
-````{r group_example2, eval = FALSE}
+
+``` r
 library(launcheR)
 
 # create queue on group 'demo'
@@ -108,6 +101,4 @@ q <- add.batch(queue = q, path = "./script3.R")
 
 # Launch
 launch.queue(q)
-````
-
-
+```
