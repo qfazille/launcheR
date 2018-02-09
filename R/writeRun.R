@@ -1,5 +1,3 @@
-# all function that write the run file
-# in class queue
 runInit <- function(object) {
     # Get info from queue object
     folder      <- object@folder
@@ -41,7 +39,6 @@ runInit <- function(object) {
     return(runFile)
 }
 
-# batch method
 runBatch <- function(batch, runFile) {
         
         # Get info from batch object
@@ -65,8 +62,6 @@ runBatch <- function(batch, runFile) {
         runWaitBatch(batch = batch, runFile = runFile)
 }
 
-# batch method
-# set this in batch class
 runWaitBatch <- function(batch, runFile) {
     # check inputs
     stopifnot(!any(unlist(lapply(list(batch, runFile), is.null))))

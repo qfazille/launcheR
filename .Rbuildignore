@@ -3,4 +3,4 @@
 ^README\.Rmd$
 ^README-.*\.png$
 R_files.bat
-./dev/*
+dev

@@ -4,7 +4,7 @@
 sysname <- function() {
     sysname <- tolower(.Platform$OS.type)
     if (sysname == "windows") {
-        return("Windows")
+        stop("Windows not supported yet")
     } else if (sysname == "unix") {
         return("Unix")
     } else {

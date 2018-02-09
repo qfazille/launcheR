@@ -27,7 +27,7 @@ waitQueue <- function(queue_name, group = NULL){
             addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id)
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
-            launchWaitQueue(id = newid) # this set wait = 0 (commented for dev)
+            launchWaitQueue(id = newid)
             # launch
         }
     }
@@ -91,7 +91,7 @@ waitBatch <- function(batch_name, batch_par, batch_rank) {
             , startDate = getDate())
         # wait before launch
         waitForBatchid(id = to_wait)
-        #launchWaitBatch(id = newid) # this set wait = 0 (commented for dev)
+        launchWaitBatch(id = newid)
         # launch
     }
 }
@@ -113,13 +113,13 @@ releaseQueue <- function() {
     # Write waitBatch (priority 1)
     df <- getWaitBatch()
     bh <- df[which(df$queueid == queue_id), ]
-    expect_gt(nrow(bh), 0)
+    if (nrow(bh) > 0) warning("batch(s) already removed")
     df <- df[-which(df$queueid == queue_id), ]
     writeWaitBatch(df = df)
     # Write waitQueue (priority 2)
     df <- getWaitQueue()
     qh <- df[which(df$queueid == queue_id), ]
-    expect_equal(nrow(qh), 1)
+    if (nrow(qh) != 1) warning("queue already removed")
     df <- df[-which(df$queueid == queue_id), ]
     writeWaitQueue(df = df)
     # Write historized.batch (priority 3)
