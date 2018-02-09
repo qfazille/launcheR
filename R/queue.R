@@ -34,38 +34,41 @@ setMethod(f = "initialize"
         , signature = "queue"
         , definition = function(.Object
                             , name = basename(tempfile(pattern = "queue", tmpdir = ""))
-                            , group = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) 
+                            , group = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
         {
             # valid name
             .Object@name <- validName(name)
-            
+
             # Don't need to validate group, clean, batchs
             .Object@group     <- group
             .Object@clean     <- clean
             .Object@batchs    <- list()
-            
+
             # Create the subfolder under folder
             if (is.null(folder) & !is.null(tmpdir)) {
-                folder <- tmpdir 
-            } else {
+                folder <- tmpdir
+            } else if (is.null(folder)) {
                 folder <- tempdir()
             }
-            folder <- normalizePath(folder)
-            temp_folder <- tmpFolder(name = .Object@name) 
+            folder <- normalizePath(folder, mustWork = TRUE)
+            temp_folder <- tmpFolder(name = .Object@name)
             subfolder <- file.path(folder, temp_folder)
             .Object@folder    <- subfolder
-            
+
             # Set logdir
             if (is.null(logdir)) {
                 .Object@logdir <- file.path(subfolder, "logs")
             } else {
                 .Object@logdir <- logdir
             }
-            
+
             # If tmpdir specified then check not in /tmp folder
-            if (!is.null(tmpdir)) if (folderInTmp(tmpdir)) stop("If tmpdir specified, then should not be in /tmp/* folder")
+            if (!is.null(tmpdir)) {
+                if (folderInTmp(tmpdir)) stop("If tmpdir specified, then should not be in /tmp/* folder")
+                tmpdir <- normalizePath(tmpdir, mustWork = TRUE)
+            }
             .Object@tmpdir <- tmpdir
-            
+
             validObject(.Object)
             return(.Object)
         }
@@ -92,7 +95,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' @param logfile Character Path to file that contains batch output. (Default queue@logfolder/batch@name.log)
 #' @rdname addBatch
 #' @exportMethod addBatch
-#' @examples 
+#' @examples
 #' \dontrun{
 #' q <- createQueue()
 #' q <- addBatch(q, "/path/batch.R")
@@ -103,31 +106,31 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 setMethod(f = "addBatch", signature = "queue", definition = function(object, name = NULL, path = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, logfile = NULL) {
     # Get Rank
     Rank <- length(object@batchs) + 1
-    
+
     # Path not null & exists
     if (is.null(path)) stop("Not a valid path")
-    path <- normalizePath(path)
+    path <- normalizePath(path, mustWork = TRUE)
     if (!checkBatchPath(path = path)) stop("Not a valid path")
-    
+
     # Get name, if name null, then set file name without extension
     if (is.null(name)) name <- tools::file_path_sans_ext(basename(path))
     if (!is.character(name) | nchar(name) > 30) stop("If name is specified then must be a character with length < 30")
-    
+
     # Get logfile
     if (is.null(logfile)) {
         logfile <- file.path(object@logdir, paste0(name, ".log"))
     }
-    
+
     # If params not null
     if (!is.null(params)) {
         # must be a list & all slots must have names
         if (!is.list(params)) stop("If params specified then must be a list")
         if (is.null(names(params)) | any(names(params) == "")) stop("All slots in params must be named")
     }
-    
+
     # Create batch
     batch <- new(Class = "batch", name = name, path = path, params = params, parallelizable = parallelizable, waitBeforeNext = waitBeforeNext, logfile = logfile, Rank = Rank)
-    
+
     # Add batch to queue
     object@batchs[[Rank]] <- batch
     return(object)
@@ -147,7 +150,7 @@ setGeneric(name="launch",def=function(object) {
 #' @description Function to launch a queue.
 #' @rdname launch
 #' @exportMethod launch
-#' @examples 
+#' @examples
 #' \dontrun{
 #' q <- createQueue()
 #' q <- addBatch(q, "/path/batch.R")
@@ -156,19 +159,19 @@ setGeneric(name="launch",def=function(object) {
 setMethod(f = "launch", signature = "queue", definition = function(object) {
     # check queue has at least one batch
     if (is.null(object@batchs)) stop("Queue doesn't have any batch")
-    
+
     # check if already exists (with TS should not append)
     if (file.exists(object@folder)) stop(paste("Already a folder named", object@folder))
-    
+
     # create subfolder
     dir.create(object@folder)
-    
+
     # if logdir doesn't exist create it
     if (!file.exists(object@logdir)) dir.create(object@logdir)
-    
+
     # Initialize run.[sh|bat] with first line waitQueue
     runFile <- runInit(object = object)
-    
+
     # Loop on batch
     #   - Create RData file
     #   - Add in run.[sh|bat] the lines
@@ -180,15 +183,15 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
         #   - add line waitBatch in run.sh
         runBatch(batch = object@batchs[[i]], runFile = runFile)
     }
-    
+
     # Add releaseQueue
     runReleaseQueue(runFile = runFile)
-    
+
     # Add clean directory
     if (object@clean) {
         cleanFolder(folder = object@folder, runFile = runFile)
     }
-    
+
     # Launch file in background
     cmd <- launchFile(runFile = runFile)
     system(cmd)
