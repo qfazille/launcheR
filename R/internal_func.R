@@ -17,7 +17,7 @@ waitQueue <- function(queue_name, group = NULL){
         # queue can be launched
     } else {
         # Check if group not present
-        if (length(df[which(df$group == group),"id"]) == 0) {
+        if (nrow(df[which(df$group == group),]) == 0) {
             addWaitQueue(queueid = newid, group = group, name = queue_name)
             # queue can be launched
         } else {
@@ -113,7 +113,7 @@ releaseQueue <- function() {
     # Write waitBatch (priority 1)
     df <- getWaitBatch()
     bh <- df[which(df$queueid == queue_id), ]
-    if (nrow(bh) > 0) warning("batch(s) already removed")
+    if (nrow(bh) == 0) warning("batch(s) already removed")
     df <- df[-which(df$queueid == queue_id), ]
     writeWaitBatch(df = df)
     # Write waitQueue (priority 2)

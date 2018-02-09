@@ -5,7 +5,7 @@
 \title{createQueue}
 \usage{
 createQueue(name = basename(tempfile(pattern = "queue", tmpdir = "")),
-  group = NULL, folder = tempdir(), logdir = NULL, clean = TRUE,
+  group = NULL, folder = NULL, logdir = NULL, clean = TRUE,
   tmpdir = NULL)
 }
 \arguments{
