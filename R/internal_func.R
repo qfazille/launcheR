@@ -140,7 +140,7 @@ writeRenviron <- function(prefix, value) {
 }
 
 setRData <- function(file) {
-    if (file %in% list.files()) {
+    if (file.exists(file)) {
         file.rename(from = file, to = ".RData")
     } else {
         stop(paste("File", file, "doesn't exist"))

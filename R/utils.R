@@ -38,9 +38,9 @@ rscript <- function() {
 
 rscriptOptions <- function(execute = FALSE, restore = FALSE, nosave = FALSE) {
     opt <- rscript()
-    if (execute) opt <- paste(opt, "-e")
     if (restore) opt <- paste(opt, "--restore")
     if (nosave)  opt <- paste(opt, "--no-save")
+    if (execute) opt <- paste(opt, "-e")
     return(opt)
 }
 
@@ -96,6 +96,15 @@ getSleep <- function() {
         return(NULL)
     } else if (sysname() == "Unix") {
         return(paste("sleep 2", linebreak()))
+    }
+}
+
+# wait
+getWait <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return(paste("wait", linebreak()))
     }
 }
 

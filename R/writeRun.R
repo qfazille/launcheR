@@ -72,7 +72,7 @@ runWaitBatch <- function(batch, runFile) {
     cat(line_, file = runFile, append = TRUE)
     
     # Add 'Rscript /path/batch' & 'launcheR:::releaseBatch' in the same line + & if waitBeforeNext = FALSE
-    cmd1 <- paste(rscriptOptions(), batch@path, redirect_log(), batch@logfile)
+    cmd1 <- paste(rscriptOptions(restore = TRUE), batch@path, redirect_log(), batch@logfile)
     cmd2 <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\")' "))
     line_ <- gatherCmd(cmd1, cmd2, background = !batch@waitBeforeNext)
     cat(line_, file = runFile, append = TRUE)
@@ -93,9 +93,10 @@ runSetRData <- function(runFile, file_) {
 # Add launcheR:::release
 runReleaseQueue <- function(runFile = NULL) {
     stopifnot(!is.null(runFile))
+    wait_line <- getWait() # This line in case user set waitBeforeNext = FALSE at the last batch of queue.
     cmd <- paste0("'launcheR:::releaseQueue()' ", nullRedirection())
-    line_ <- paste(rscriptOptions(execute=TRUE), cmd)
-    cat(line_, file = runFile, append = TRUE)
+    cmd_line <- paste(rscriptOptions(execute=TRUE), cmd)
+    cat(wait_line, cmd_line, file = runFile, append = TRUE)
 }
 
 # Add remove temp folder
