@@ -1,25 +1,20 @@
 setClassUnion("CharacterOrNULL", c("character", "NULL"))
 setClassUnion("ListOrNULL", c("list", "NULL"))
 
-### Class
-#' The queue class
-#'
-#' This class is used to store follwing slot
-#'
-#' @slot name Character Contains name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))
-#' @slot group Character Contains the group name the queue belongs to. (Default NULL)
-#' @slot folder Character Contains path to a folder that will contains the working directory folder. (Default tempdir())
-#' @slot batchs List Contains batch S4 objects. (Default NULL)
-#'
 #' @name classQueue
-#' @rdname classQueue
 #' @aliases queue-class
+#' @title The queue class
+#' @description This class is used to store follwing slot
+#' @slot name Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))
+#' @slot group Character Name of the group the queue belongs to. (Default NULL)
+#' @slot folder Character Path to a folder that will contains the working directory folder. (Default tempdir())
+#' @slot batchs List Batch S4 objects. (Default NULL)
+#' @slot logdir Character Path to the folder that will contains logs file. (By default in folder)
+#' @slot clean Logical Whether or not the working directory folder should be removed. (Default TRUE)
+#' @slot tmpdir Character If use through RSConnect then you must define a tmpdir not in /tmp/*. (Default TRUE)
+#' @aliases queue-class
+#' @rdname classQueue
 #' @exportClass queue
-#' @examples
-#' showClass("queue")
-#' 
-#' ## Methods available for this class
-#' showMethods(classes="queue")
 #' @author Quentin Fazilleau
 setClass(
     Class = "queue",
@@ -29,15 +24,17 @@ setClass(
         folder = "character",
         batchs = "ListOrNULL",
         logdir = "character",
-        clean = "logical"
+        clean = "logical",
+        tmpdir = "CharacterOrNULL"
     )
 )
 
+#' @importFrom methods validObject
 setMethod(f = "initialize"
         , signature = "queue"
         , definition = function(.Object
                             , name = basename(tempfile(pattern = "queue", tmpdir = ""))
-                            , group = NULL, folder = tempdir(), logdir = NULL, clean = TRUE) 
+                            , group = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) 
         {
             # valid name
             .Object@name <- validName(name)
@@ -48,6 +45,11 @@ setMethod(f = "initialize"
             .Object@batchs    <- list()
             
             # Create the subfolder under folder
+            if (is.null(folder) & !is.null(tmpdir)) {
+                folder <- tmpdir 
+            } else if (is.null(folder) & is.null(tmpdir)) {
+                folder <- tempdir()
+            }
             folder <- normalizePath(folder)
             temp_folder <- tmpFolder(name = .Object@name) 
             subfolder <- file.path(folder, temp_folder)
@@ -60,31 +62,44 @@ setMethod(f = "initialize"
                 .Object@logdir <- logdir
             }
             
+            # If tmpdir specified then check not in /tmp folder
+            if (!is.null(tmpdir) & folderInTmp(tmpdir)) stop("If tmpdir specified, then should not be in /tmp/* folder")
+            .Object@tmpdir <- tmpdir
+            
             validObject(.Object)
             return(.Object)
         }
 )
 
-#' addBatch
-#'
-#' Add batch to a queue
-#' @param object An object of class queue.
-#' @param ... Others arguments from specific methods.
-#' @exportMethod addBatch
-setGeneric(name="addBatch",def=function(object,...)     {standardGeneric("addBatch")})
-
-
+#' @aliases addBatch
+#' @param object An object of class queue
+#' @param ... Others arguments from specific methods
 #' @rdname addBatch
-#' @param name Character Contains alias of the batch. (Default basename(batch@path))
-#' @param path Character Contains the path to the R batch. (Mandatory)
-#' @param params Named list Contains the variable to be transfered to batch. (Default NULL)
+#' @export
+setGeneric(name = "addBatch", def = function(object, ...) {
+    standardGeneric("addBatch")
+})
+
+#' @name addBatch
+#' @aliases addBatch,queue-method
+#' @title addBatch
+#' @description Add batch to a queue
+#' @param name Character Alias of the batch. (Default basename(batch@path))
+#' @param path Character Path to the R batch. (Mandatory)
+#' @param params Named list that contains the variable to be transfered to batch. (Default NULL)
 #' @param parallelizable Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)
 #' @param waitBeforeNext Logical If queue can launch next batch while this one. (Default TRUE)
-#' @param logfile Character Contains path to file that contains batch output. (Default queue@logfolder/batch@name.log)
+#' @param logfile Character Path to file that contains batch output. (Default queue@logfolder/batch@name.log)
+#' @rdname addBatch
+#' @exportMethod addBatch
 #' @examples 
 #' \dontrun{
-#' to be seen later
+#' q <- createQueue()
+#' q <- addBatch(q, "/path/batch.R")
+#' launch(q)
 #' }
+#' @author Quentin Fazilleau
+#' @importFrom methods new
 setMethod(f = "addBatch", signature = "queue", definition = function(object, name = NULL, path = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, logfile = NULL) {
     # Get Rank
     Rank <- length(object@batchs) + 1
@@ -118,24 +133,32 @@ setMethod(f = "addBatch", signature = "queue", definition = function(object, nam
     return(object)
 })
 
-
-#' launch
-#'
-#' Launch a queue
-#' @exportMethod launch
-setGeneric(name="launch",def=function(object)   {standardGeneric("launch")})
-
+#' @aliases launch
+#' @param object An object of class queue
 #' @rdname launch
+#' @export
+setGeneric(name="launch",def=function(object) {
+    standardGeneric("launch")
+})
+
+#' @name launch
+#' @aliases launch,queue-method
+#' @title launch
+#' @description Function to launch a queue.
+#' @rdname launch
+#' @exportMethod launch
 #' @examples 
 #' \dontrun{
-#' to be seen later
+#' q <- createQueue()
+#' q <- addBatch(q, "/path/batch.R")
+#' launch(q)
 #' }
 setMethod(f = "launch", signature = "queue", definition = function(object) {
     # check queue has at least one batch
     if (is.null(object@batchs)) stop("Queue doesn't have any batch")
     
     # check if already exists (with TS should not append)
-    if (file.exists(object@folder)) stop(paste("Already a folder named", folder))
+    if (file.exists(object@folder)) stop(paste("Already a folder named", object@folder))
     
     # create subfolder
     dir.create(object@folder)
@@ -171,6 +194,7 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     system(cmd)
 })
 
+# for dev purposes
 setGeneric(name="cleanQ",def=function(object)   {standardGeneric("cleanQ")})
 setMethod(f = "cleanQ", signature = "queue", definition = function(object) {
     if (isTmpFolder(object@folder)) {
@@ -184,3 +208,4 @@ setMethod(f = "cleanQ", signature = "queue", definition = function(object) {
         message(paste("Folder", object@folder, "suspicious"))
     }
 })
+

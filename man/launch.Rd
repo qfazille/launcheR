@@ -3,6 +3,7 @@
 \docType{methods}
 \name{launch}
 \alias{launch}
+\alias{launch}
 \alias{launch,queue-method}
 \title{launch}
 \usage{
@@ -10,11 +11,16 @@ launch(object)
 
 \S4method{launch}{queue}(object)
 }
+\arguments{
+\item{object}{An object of class queue}
+}
 \description{
-Launch a queue
+Function to launch a queue.
 }
 \examples{
 \dontrun{
-to be seen later
+q <- createQueue()
+q <- addBatch(q, "/path/batch.R")
+launch(q)
 }
 }

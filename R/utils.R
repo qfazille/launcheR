@@ -171,7 +171,18 @@ checkBatchPath <- function(path = NULL) {
     return(TRUE)
 }
 
+# chmod run file
 executableFile <- function(runFile) {
     stopifnot(!is.null(runFile))
     Sys.chmod(runFile, mode = "0750", use_umask = TRUE)
+}
+
+# check if folder in not in /tmp/
+folderInTmp <- function(folder) {
+    stopifnot(!is.null(folder))
+    if (length(grep(pattern = "^/tmp/", x = folder, perl = TRUE)) == 0) {
+        return(FALSE)
+    } else {
+        return(TRUE)
+    }
 }

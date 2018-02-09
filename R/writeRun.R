@@ -18,6 +18,13 @@ runInit <- function(object) {
     # init .Renviron
     cat(runRenviron(), file = runFile, append = TRUE)
     
+    # If tmpdir then write it in Renviron
+    if (!is.null(object@tmpdir)) {
+        writeRenviron(prefix = "TMP", value = object@tmpdir)
+        writeRenviron(prefix = "TMPDIR", value = object@tmpdir)
+        writeRenviron(prefix = "TEMP", value = object@tmpdir)
+    }
+    
     # Write in runFile
     if (is.null(object@group)) {
         cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\")' ", nullRedirection())

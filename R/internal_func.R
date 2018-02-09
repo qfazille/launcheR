@@ -1,4 +1,3 @@
-#' @export
 waitQueue <- function(queue_name, group = NULL){
 
     # Write queue_name & group in Renviron
@@ -34,7 +33,6 @@ waitQueue <- function(queue_name, group = NULL){
     }
 }
 
-#' @export
 waitBatch <- function(batch_name, batch_par, batch_rank) {
 
     # input
@@ -98,7 +96,6 @@ waitBatch <- function(batch_name, batch_par, batch_rank) {
     }
 }
 
-#' @export
 releaseBatch <- function(batch_rank) {
     stopifnot(!is.null(batch_rank))
     batch_id <- getBatchidFromRank(batch_rank)
@@ -110,8 +107,6 @@ releaseBatch <- function(batch_rank) {
     writeWaitBatch(df = df)
 }
 
-#' @export
-#' @import testthat
 releaseQueue <- function() {
     queue_id    <- getQueueid()
     queue_name  <- getQueuename()
@@ -133,7 +128,6 @@ releaseQueue <- function() {
     addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }
 
-#' @export
 writeRenviron <- function(prefix, value) {
     x <- readLines(".Renviron")
     toChange <- which(startsWith(x, paste0(prefix, "=")))
@@ -145,7 +139,6 @@ writeRenviron <- function(prefix, value) {
     cat(x, file = ".Renviron", sep = linebreak())
 }
 
-#' @export
 setRData <- function(file) {
     if (file %in% list.files()) {
         file.rename(from = file, to = ".RData")
