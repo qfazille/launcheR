@@ -43,6 +43,11 @@ run_test <- function(obj, types = c("name", "group", "folder", "tmpdir", "logdir
     expect_is(obj@batchs, "list")
 }
 
+# create needed folders
+folders <- c("logs", "queues", "tmp")
+tocreate <- folders[which(!file.exists(folders))]
+if (length(tocreate) > 0) sapply(tocreate, dir.create)
+
 test_that("basic queue creation", {
     obj <- createQueue()
     run_test(obj, types = "none")
@@ -92,3 +97,8 @@ test_that("queue with logdir & folder & tmpdir", {
     obj <- createQueue(folder = "./queues", logdir = "./logs", tmpdir = "./tmp")
     run_test(obj, types = c("logdir", "folder", "tmpdir"))
 })
+
+# drop needed folders
+folders <- c("logs", "queues", "tmp")
+todrop <- folders[which(file.exists(folders))]
+if (length(todrop) > 0) sapply(todrop, function(x) unlink(x, recursive = TRUE))

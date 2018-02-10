@@ -1,0 +1,4 @@
+Name: Running queue(s)
+Description: See progress on running queue(s) / batch(s) monitored by launcheR
+Binding: launcheRviewer
+Interactive: true
