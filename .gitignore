@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 R_files.bat
+inst/extdata/*
