@@ -87,8 +87,8 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' @aliases addBatch,queue-method
 #' @title addBatch
 #' @description Add batch to a queue
-#' @param name Character Alias of the batch. (Default basename(batch@path))
 #' @param path Character Path to the R batch. (Mandatory)
+#' @param name Character Alias of the batch. (Default basename(batch@path))
 #' @param params Named list that contains the variable to be transfered to batch. (Default NULL)
 #' @param parallelizable Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)
 #' @param waitBeforeNext Logical If queue can launch next batch while this one. (Default TRUE)
@@ -103,7 +103,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' }
 #' @author Quentin Fazilleau
 #' @importFrom methods new
-setMethod(f = "addBatch", signature = "queue", definition = function(object, name = NULL, path = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, logfile = NULL) {
+setMethod(f = "addBatch", signature = "queue", definition = function(object, path = NULL, name = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, logfile = NULL) {
     # Get Rank
     Rank <- length(object@batchs) + 1
 

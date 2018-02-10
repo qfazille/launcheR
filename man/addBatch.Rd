@@ -9,7 +9,7 @@
 \usage{
 addBatch(object, ...)
 
-\S4method{addBatch}{queue}(object, name = NULL, path = NULL,
+\S4method{addBatch}{queue}(object, path = NULL, name = NULL,
   params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE,
   logfile = NULL)
 }
@@ -18,9 +18,9 @@ addBatch(object, ...)
 
 \item{...}{Others arguments from specific methods}
 
-\item{name}{Character Alias of the batch. (Default basename(batch@path))}
-
 \item{path}{Character Path to the R batch. (Mandatory)}
+
+\item{name}{Character Alias of the batch. (Default basename(batch@path))}
 
 \item{params}{Named list that contains the variable to be transfered to batch. (Default NULL)}
 
