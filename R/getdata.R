@@ -162,7 +162,7 @@ addWaitQueue <- function(queueid, group = NA, name, wait = 0, startDate = getDat
                     , name = name
                     , wait = wait
                     , startDate = startDate
-                    , realStartDate = realStartDate
+                    , realStartDate = as.character(realStartDate)
                     , stringsAsFactors = FALSE)
     stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "numeric", "character", "character")))
     df <- getWaitQueue()

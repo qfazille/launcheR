@@ -24,7 +24,7 @@ waitQueue <- function(queue_name, group = NULL){
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == group),"queueid"])
             # add in waiting queue
-            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id)
+            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id, realStartDate = NA)
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
             launchWaitQueue(id = newid)
