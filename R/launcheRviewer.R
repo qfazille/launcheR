@@ -37,8 +37,8 @@ launcheRviewer <- function() {
         # All DT
         output$DT_wait_batch <- DT::renderDataTable({
             df <- isolate(getWaitBatch())
-            DT::datatable(df, rownames = FALSE, options = list(dom = 't', ordering = FALSE)) %>%
-                DT::formatStyle("wait", target = "row", backgroundColor = DT::styleEqual(c(0:1000), c("lightgreen", rep("orange", 1000)))) %>% 
+            DT::datatable(df, rownames = FALSE, options = list(dom = 'tp', ordering = FALSE)) %>%
+                DT::formatStyle("wait", target = "row", backgroundColor = DT::styleEqual(c(0:1000), c("lightgreen", rep("orange", 1000)))) %>%
                 DT::formatStyle("progress",
                             background = DT::styleColorBar(c(1,100), 'lightblue'),
                             backgroundSize = '98% 88%',
@@ -50,20 +50,20 @@ launcheRviewer <- function() {
         
         output$DT_wait_queue <- DT::renderDataTable({
             df <- isolate(getWaitQueue())
-            DT::datatable(df, rownames = FALSE, options = list(dom = 't', ordering = FALSE)) %>%
+            DT::datatable(df, rownames = FALSE, options = list(dom = 'tp', ordering = FALSE)) %>%
                 DT::formatStyle("wait", target = "row", backgroundColor = DT::styleEqual(c(0:1000), c("lightgreen", rep("orange", 1000))))
         })
         proxy_WQ = DT::dataTableProxy("DT_wait_queue")
         
         output$DT_hist_batch <- DT::renderDataTable({
             df <- isolate(getHistorizedBatch())
-            DT::datatable(df, rownames = FALSE, options = list(dom = 't', ordering = FALSE))
+            DT::datatable(df, rownames = FALSE, options = list(dom = 'tp', order = list(0,"desc")))
         })
         proxy_HB = DT::dataTableProxy("DT_hist_batch")
         
         output$DT_hist_queue <- DT::renderDataTable({
             df <- isolate(getHistorizedQueue())
-            DT::datatable(df, rownames = FALSE, options = list(dom = 't', ordering = FALSE))
+            DT::datatable(df, rownames = FALSE, options = list(dom = 'tp', order = list(0,"desc")))
         })
         proxy_HQ = DT::dataTableProxy("DT_hist_queue")
         
