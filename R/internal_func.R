@@ -123,7 +123,7 @@ releaseQueue <- function() {
     df <- df[-which(df$queueid == queue_id), ]
     writeWaitQueue(df = df)
     # Write historized.batch (priority 3)
-    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate)
+    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
     # Write historized queue  (priority 3)
     addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }

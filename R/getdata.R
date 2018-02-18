@@ -59,10 +59,12 @@ getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
     return(df)
 }
 
-getHistorizedBatch <- function(reset = FALSE) {
+getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
     file_ <- fileHistorizedBatch()
     if (file.exists(file_) & !reset) {
         df <- readRDS(file = file_)
+        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
+        if (!is.null(batchid)) df <- df[which(df$batchid %in% batchid), ]
     } else {
         df <- data.frame(queueid = numeric()
                     , batchid = numeric()
@@ -78,10 +80,11 @@ getHistorizedBatch <- function(reset = FALSE) {
     return(df)
 }
 
-getHistorizedQueue <- function(reset = FALSE) {
+getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
     file_ <- fileHistorizedQueue()
     if (file.exists(file_) & !reset) {
         df <- readRDS(file = file_)
+        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
     } else {
         df <- data.frame(queueid = numeric()
                     , group = character()

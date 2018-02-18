@@ -195,3 +195,14 @@ folderInTmp <- function(folder) {
         return(TRUE)
     }
 }
+
+# Convert date in char to num
+DateChar2Num <- function(date) {
+    a <- as.POSIXct(date, format="%Y-%m-%d %H:%M:%S")
+    as.numeric(a)
+}
+
+# Convert num to date in char
+Num2DateChar <- function(num) {
+    format(as.POSIXct(num, origin = "1970-01-01"), format = "%Y-%m-%d %H:%M:%S")
+}
