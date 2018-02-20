@@ -6,7 +6,6 @@ waitFor <- function(type = c("queue", "batch"), id) {
     }
     
     while(wait) {
-        Sys.sleep(10)
         if (type == "queue") {
             df <- getWaitQueue()
             wait <- any(id %in% df$queueid)
@@ -14,6 +13,7 @@ waitFor <- function(type = c("queue", "batch"), id) {
             df <- getWaitBatch(with.done = FALSE)
             wait <- any(id %in% df$batchid)
         }
+        if (wait) Sys.sleep(10)
     }
 }
 
