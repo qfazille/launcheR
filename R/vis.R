@@ -46,86 +46,97 @@ addMNB <- function(queueid) {
 
 
 dataVis <- function(queueid) {
-    # header
-    EDQ <- getEDQ(queueid = queueid)
-    SDQ <- getSDQ(queueid = queueid)
-    RSDQ <- getRSDQ(queueid = queueid)
+    stopifnot(length(queueid) > 0)
 
-    # wait process
-    wp <- data.frame(center_x = (SDQ+RSDQ)/2
-                    , center_y = 1/2
-                    , height = 1
-                    , width = EDQ-SDQ
-                    , xmin = SDQ
-                    , xmax= RSDQ
-                    , ymin = 0
-                    , ymax = 1
-                    , color = "grey70"
-                    , label = NA)
+    toreturn <- data.frame(center_x = numeric(), center_y = numeric(), height = numeric(), width = numeric()
+                    , xmin = numeric(), xmax = numeric(), ymin = numeric(), ymax = numeric()
+                    , color = character(), label = character(), stringsAsFactors = FALSE)
 
-    # wait due to launcheR processes
-    wl <- data.frame(center_x = (EDQ+RSDQ)/2
-                    , center_y = 1/2
-                    , height = 1
-                    , width = EDQ-RSDQ
-                    , xmin = RSDQ
-                    , xmax = EDQ
-                    , ymin = 0
-                    , ymax = 1
-                    , color = "wheat1"
-                    , label = NA)
+    for (i in 1:length(queueid)) {
+        QR <- i - 1 # queue rank
+        CQ <- queueid[i] # current queue
+        # header
+        EDQ <- getEDQ(queueid = CQ)
+        SDQ <- getSDQ(queueid = CQ)
+        RSDQ <- getRSDQ(queueid = CQ)
 
-    plotdf1 <- rbind(wp, wl)
+        # wait process
+        wp <- data.frame(center_x = (SDQ+RSDQ)/2
+                        , center_y = 1/2 + (QR-1)*1.5
+                        , height = 1
+                        , width = EDQ-SDQ
+                        , xmin = SDQ
+                        , xmax= RSDQ
+                        , ymin = 0 + (QR-1)*1.5
+                        , ymax = 1 + (QR-1)*1.5
+                        , color = "grey70"
+                        , label = NA, stringsAsFactors = FALSE)
 
-    # batchs & wait batchs
-    df <- addMNB(queueid = queueid)
+        # wait due to launcheR processes
+        wl <- data.frame(center_x = (EDQ+RSDQ)/2
+                        , center_y = 1/2 + (QR-1)*1.5
+                        , height = 1
+                        , width = EDQ-RSDQ
+                        , xmin = RSDQ
+                        , xmax = EDQ
+                        , ymin = 0 + (QR-1)*1.5
+                        , ymax = 1 + (QR-1)*1.5
+                        , color = "wheat1"
+                        , label = NA, stringsAsFactors = FALSE)
 
-    # Transform date
-    df$startDate <- DateChar2Num(df$startDate)
-    df$realStartDate <- DateChar2Num(df$realStartDate)
-    df$endDate <- DateChar2Num(df$endDate)
+        plotdf1 <- rbind(wp, wl)
 
-    # batch
-    plotdfb <- df[,c("batchid", "batchname", "realStartDate", "endDate", "MNB", "rankBatch")]
-    plotdfb$color <- "lightskyblue1"
-    colnames(plotdfb) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
+        # batchs & wait batchs
+        df <- addMNB(queueid = CQ)
 
-    # wait
-    plotdfw <- df[,c("batchid", "batchname", "startDate", "realStartDate", "MNB", "rankBatch")]
-    plotdfw$color <- "grey60"
-    colnames(plotdfw) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
-    plotdfw$label = NA
+        # Transform date
+        df$startDate <- DateChar2Num(df$startDate)
+        df$realStartDate <- DateChar2Num(df$realStartDate)
+        df$endDate <- DateChar2Num(df$endDate)
 
-    # rbind df
-    fdf <- rbind(plotdfb, plotdfw)
+        # batch
+        plotdfb <- df[,c("batchid", "batchname", "realStartDate", "endDate", "MNB", "rankBatch")]
+        plotdfb$color <- "lightskyblue1"
+        colnames(plotdfb) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
 
-    # centers x/y
-    fdf$center_x <- (fdf$SD + fdf$ED)/2
-    fdf$center_y <- 1/(2*fdf$MNB) + (fdf$RB-1)/fdf$MNB
+        # wait
+        plotdfw <- df[,c("batchid", "batchname", "startDate", "realStartDate", "MNB", "rankBatch")]
+        plotdfw$color <- "grey60"
+        colnames(plotdfw) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
+        plotdfw$label = NA
 
-    # height & width
-    fdf$height <- 1/fdf$MNB
-    fdf$width  <- fdf$ED - fdf$SD
+        # rbind df
+        fdf <- rbind(plotdfb, plotdfw)
 
-    # x/y min/max
-    fdf$xmin <- fdf$SD
-    fdf$xmax <- fdf$ED
-    fdf$ymin <- (fdf$RB-1)*(1/fdf$MNB)
-    fdf$ymax <- (fdf$RB)*(1/fdf$MNB)
+        # centers x/y
+        fdf$center_x <- (fdf$SD + fdf$ED)/2
+        fdf$center_y <- 1/(2*fdf$MNB) + (fdf$RB-1)/fdf$MNB + (QR-1)*1.5
 
-    # keep only rectangles that exists
-    fdf <- fdf[which(fdf$width > 0),]
-    plotdf2 <- fdf[,c("center_x", "center_y", "height", "width", "xmin", "xmax", "ymin", "ymax", "color", "label")]
+        # height & width
+        fdf$height <- 1/fdf$MNB
+        fdf$width  <- fdf$ED - fdf$SD
 
-    plotdf <- rbind(plotdf1, plotdf2)
-    return(plotdf)
+        # x/y min/max
+        fdf$xmin <- fdf$SD
+        fdf$xmax <- fdf$ED
+        fdf$ymin <- (fdf$RB-1)*(1/fdf$MNB) + (QR-1)*1.5
+        fdf$ymax <- (fdf$RB)*(1/fdf$MNB) + (QR-1)*1.5
+
+        # keep only rectangles that exists
+        fdf <- fdf[which(fdf$width > 0),]
+        plotdf2 <- fdf[,c("center_x", "center_y", "height", "width", "xmin", "xmax", "ymin", "ymax", "color", "label")]
+
+        plotdf <- rbind(plotdf1, plotdf2)
+        toreturn <- rbind(toreturn, plotdf)
+    }
+    return(toreturn)
 }
 
 
 vis <- function(queueid) {
     # check queueid is in historizedBatch
     df <- launcheR:::getHistorizedBatch(queueid = queueid)
-    if (nrow(df) == 0) stop(paste("queueid", queueid, "doesn't exists"))
+    if (nrow(df) == 0) stop(paste("queueid(s)", paste(queueid, collapse = ", "), "don't exists"))
 
     plotdf <- dataVis(queueid)
 
