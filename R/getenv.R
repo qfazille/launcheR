@@ -4,6 +4,12 @@ getQueuename <- function(mandatory = TRUE) {
     if (mandatory & is.null(val)) stop("environment variable LR_Q cannot be null") else return(val)
 }
 
+getQueueowner <- function(mandatory = TRUE) {
+    val <- Sys.getenv("LR_QOWN")
+    if (val == "") val <- NULL
+    if (mandatory & is.null(val)) stop("environment variable LR_QOWN cannot be null") else return(val)
+}
+
 getQueueid <- function(mandatory = TRUE) {
     val <- as.numeric(Sys.getenv("LR_QID"))
     if (is.na(val)) val <- NULL

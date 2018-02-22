@@ -1,8 +1,9 @@
-waitQueue <- function(queue_name, group = NULL){
+waitQueue <- function(queue_name, group = NULL, owner){
 
-    # Write queue_name & group in Renviron
+    # Write queue_name, group & owner in Renviron
     writeRenviron(prefix = "LR_Q", value = queue_name)
     if (!is.null(group)) writeRenviron(prefix = "LR_G", value = group)
+    writeRenviron(prefix = "LR_QOWN", value = owner)
 
     # Get data
     df <- getWaitQueue()
@@ -13,18 +14,18 @@ waitQueue <- function(queue_name, group = NULL){
 
     # if no group, then no check
     if (is.null(group)) {
-        addWaitQueue(queueid = newid, name = queue_name, wait = 0, startDate = getDate(), realStartDate = getDate())
+        addWaitQueue(queueid = newid, name = queue_name, owner = owner, wait = 0, startDate = getDate(), realStartDate = getDate())
         # queue can be launched
     } else {
         # Check if group not present
         if (nrow(df[which(df$group == group),]) == 0) {
-            addWaitQueue(queueid = newid, group = group, name = queue_name, startDate = getDate(), realStartDate = getDate())
+            addWaitQueue(queueid = newid, group = group, name = queue_name, owner = owner, startDate = getDate(), realStartDate = getDate())
             # queue can be launched
         } else {
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == group),"queueid"])
             # add in waiting queue
-            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id, startDate = getDate())
+            addWaitQueue(queueid = newid, group = group, name = queue_name, owner = owner, wait = wait_for_id, startDate = getDate())
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
             launchWaitQueue(id = newid)
@@ -113,6 +114,8 @@ releaseBatch <- function(batch_rank) {
 releaseQueue <- function() {
     queue_id    <- getQueueid()
     queue_name  <- getQueuename()
+    queue_owner <- getQueueowner()
+    
     # Write waitBatch (priority 1)
     df <- getWaitBatch()
     bh <- df[which(df$queueid == queue_id), ]
@@ -128,7 +131,7 @@ releaseQueue <- function() {
     # Write historized.batch (priority 3)
     addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
     # Write historized queue  (priority 3)
-    addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
+    addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, owner = queue_owner, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }
 
 writeRenviron <- function(prefix, value) {

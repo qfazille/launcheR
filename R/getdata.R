@@ -34,6 +34,7 @@ getWaitQueue <- function(reset = FALSE) {
         df <- data.frame(queueid = numeric()
                         , group = character()
                         , name = character()
+                        , owner = character()
                         , wait = numeric()
                         , startDate = character()
                         , realStartDate = character()
@@ -97,6 +98,7 @@ getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
         df <- data.frame(queueid = numeric()
                     , group = character()
                     , queuename = character()
+                    , owner = character()
                     , startDate = character()
                     , realStartDate = character()
                     , endDate = character()
@@ -167,17 +169,18 @@ addWaitBatch <- function(batchid, queueid, group = NULL, path, name, paralleliza
     writeWaitBatch(df = df)
 }
 
-addWaitQueue <- function(queueid, group = NULL, name, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
+addWaitQueue <- function(queueid, group = NULL, name, owner, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
     stopifnot(!any(unlist(lapply(list(queueid, name), is.null))))
     if (is.null(group)) group <- as.character(NA) # Need to keep this line (same as in addWaitBatch function)
     toInsert <- data.frame(queueid = queueid
                     , group = group
                     , name = name
+                    , owner = owner
                     , wait = wait
                     , startDate = startDate
                     , realStartDate = realStartDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "numeric", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "numeric", "character", "character")))
     df <- getWaitQueue()
     df <- rbind(df, toInsert)
     writeWaitQueue(df = df)
@@ -201,16 +204,17 @@ addHistorizedBatch <- function(queueid, batchid, group, path, queuename, batchna
     writeHistorizedBatch(df = df)
 }
 
-addHistorizedQueue <- function(queueid, group, queuename, startDate, realStartDate, endDate = getDate()) {
+addHistorizedQueue <- function(queueid, group, queuename, owner, startDate, realStartDate, endDate = getDate()) {
     stopifnot(!any(unlist(lapply(list(queueid, queuename, startDate, realStartDate, endDate), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , group = as.character(group)
                     , queuename = queuename
+                    , owner = owner
                     , startDate = startDate
                     , realStartDate = realStartDate
                     , endDate = endDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "character", "character", "character")))
     df <- getHistorizedQueue()
     df <- rbind(df, toInsert)
     writeHistorizedQueue(df = df)

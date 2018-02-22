@@ -25,9 +25,9 @@ runInit <- function(object) {
     
     # Write in runFile
     if (is.null(object@group)) {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\")' ", nullRedirection())
+        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")' ", nullRedirection())
     } else {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\")' ", nullRedirection())
+        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")' ", nullRedirection())
     }
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     

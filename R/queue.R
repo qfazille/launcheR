@@ -7,6 +7,7 @@ setClassUnion("ListOrNULL", c("list", "NULL"))
 #' @description This class is used to store follwing slot
 #' @slot name Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))
 #' @slot group Character Name of the group the queue belongs to. (Default NULL)
+#' @slot owner Character username of launcher. (Default Sys.info()["user"])
 #' @slot folder Character Path to a folder that will contains the working directory folder. (Default tempdir())
 #' @slot batchs List Batch S4 objects. (Default NULL)
 #' @slot logdir Character Path to the folder that will contains logs file. (By default in folder)
@@ -21,6 +22,7 @@ setClass(
     slots = c(
         name = "character",
         group = "CharacterOrNULL",
+        owner = "character",
         folder = "character",
         batchs = "ListOrNULL",
         logdir = "character",
@@ -32,17 +34,20 @@ setClass(
 #' @importFrom methods validObject
 setMethod(f = "initialize"
         , signature = "queue"
-        , definition = function(.Object
-                            , name = basename(tempfile(pattern = "queue", tmpdir = ""))
-                            , group = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
+        , definition = function(.Object, name = NULL, group = NULL, owner = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
         {
             # valid name
             .Object@name <- validName(name)
-
+            
+            # valid owner
+            if (is.null(owner))     owner <- ""
+            if (nchar(owner) > 20)  owner <- substr(owner, 1, 20)
+            
             # Don't need to validate group, clean, batchs
             .Object@group     <- group
             .Object@clean     <- clean
             .Object@batchs    <- list()
+            .Object@owner     <- owner
 
             # Create the subfolder under folder
             if (is.null(folder) & !is.null(tmpdir)) {

@@ -15,6 +15,8 @@ This class is used to store follwing slot
 
 \item{\code{group}}{Character Name of the group the queue belongs to. (Default NULL)}
 
+\item{\code{owner}}{Character username of launcher. (Default Sys.info()["user"])}
+
 \item{\code{folder}}{Character Path to a folder that will contains the working directory folder. (Default tempdir())}
 
 \item{\code{batchs}}{List Batch S4 objects. (Default NULL)}

@@ -5,13 +5,15 @@
 \title{createQueue}
 \usage{
 createQueue(name = basename(tempfile(pattern = "queue", tmpdir = "")),
-  group = NULL, folder = NULL, logdir = NULL, clean = TRUE,
-  tmpdir = NULL)
+  group = NULL, owner = Sys.info()["user"], folder = NULL,
+  logdir = NULL, clean = TRUE, tmpdir = NULL)
 }
 \arguments{
 \item{name}{Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))}
 
 \item{group}{Character Name of the group the queue belongs to. (Default NULL)}
+
+\item{owner}{Character username of launcher. (Default Sys.info()["user"])}
 
 \item{folder}{Character Path to a folder that will contains the working directory folder. (Default tempdir())}
 
