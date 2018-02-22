@@ -19,6 +19,7 @@ getRSDQ <- function(queueid) {
     DateChar2Num(launcheR:::getHistorizedQueue(queueid = queueid)$realStartDate)
 }
 
+#' @importFrom stats ave
 addMNB <- function(queueid) {
     df <- launcheR:::getHistorizedBatch(queueid = queueid)
     df$batchgroup <- NA
@@ -133,6 +134,7 @@ dataVis <- function(queueid) {
 }
 
 
+#' @import ggplot2
 vis <- function(queueid) {
     # check queueid is in historizedBatch
     df <- launcheR:::getHistorizedBatch(queueid = queueid)
@@ -142,13 +144,13 @@ vis <- function(queueid) {
 
     # plot rectangles
     p <- ggplot(plotdf) +
-        geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = color), linetype = "solid", color = "black") +
+        geom_rect(aes_string(xmin = "xmin", xmax = "xmax", ymin = "ymin", ymax = "ymax", fill = "color"), linetype = "solid", color = "black") +
         scale_fill_identity(guide = "legend", name = NULL
                             , labels = c("queue waiting", "launcheR processes", "batch running", "batch waiting")
                             , breaks = c("grey70", "wheat1", "lightskyblue1", "grey60"))
 
     # plot labels
-    p <- p + geom_label(aes(x = center_x, y = center_y, label = label))
+    p <- p + geom_label(aes_string(x = "center_x", y = "center_y", label = "label"))
 
     # Remove labs & add scale for date
     p <- p + theme(axis.title.y = element_blank(),

@@ -94,7 +94,7 @@ launcheRviewer <- function() {
     }
     
     # Use a modal dialog as a viewr.
-    viewer <- dialogViewer("launcheR", width = 1000, height = 800)
+    viewer <- dialogViewer("launcheR", width = 1400, height = 800)
     runGadget(ui, server, viewer = viewer)
     
 }

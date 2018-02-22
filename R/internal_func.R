@@ -13,18 +13,18 @@ waitQueue <- function(queue_name, group = NULL){
 
     # if no group, then no check
     if (is.null(group)) {
-        addWaitQueue(queueid = newid, group = NA, name = queue_name, wait = 0)
+        addWaitQueue(queueid = newid, name = queue_name, wait = 0, startDate = getDate(), realStartDate = getDate())
         # queue can be launched
     } else {
         # Check if group not present
         if (nrow(df[which(df$group == group),]) == 0) {
-            addWaitQueue(queueid = newid, group = group, name = queue_name)
+            addWaitQueue(queueid = newid, group = group, name = queue_name, startDate = getDate(), realStartDate = getDate())
             # queue can be launched
         } else {
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == group),"queueid"])
             # add in waiting queue
-            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id, realStartDate = NA)
+            addWaitQueue(queueid = newid, group = group, name = queue_name, wait = wait_for_id, startDate = getDate())
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
             launchWaitQueue(id = newid)
@@ -33,15 +33,15 @@ waitQueue <- function(queue_name, group = NULL){
     }
 }
 
-waitBatch <- function(batch_name, batch_par, batch_rank) {
+waitBatch <- function(batch_name, batch_par, batch_rank, batch_path) {
 
     # input
     batch_par <- as.logical(batch_par)
 
     # Get env
-    queue_name  <- getQueuename()
-    queue_id    <- getQueueid()
-    queue_group <- getGroup(mandatory = FALSE)
+    queue_name   <- getQueuename()
+    queue_id     <- getQueueid()
+    queue_group  <- getGroup(mandatory = FALSE)
 
     # Write queue_name & group in Renviron
     writeRenviron(prefix = "LR_B", value = batch_name)
@@ -54,11 +54,13 @@ waitBatch <- function(batch_name, batch_par, batch_rank) {
     newid <- newidBatch()
     writeRenviron(prefix = "LR_BID", value = newid)
     writeRenviron(prefix = paste0("LR_BR", batch_rank), value = newid)
-
-    if (length(which(df$name == batch_name)) == 0) {
+    
+    # Check is done on batch path and not and name anymore (Issue #3)
+    if (length(which(df$path == batch_path)) == 0) {
         addWaitBatch(batchid = newid
             , queueid = queue_id
             , group = queue_group
+            , path = batch_path
             , name = batch_name
             , parallelizable = batch_par
             , wait = 0
@@ -67,7 +69,7 @@ waitBatch <- function(batch_name, batch_par, batch_rank) {
             , realStartDate = getDate())
         # launch
     } else {
-        df <- df[which(df$name == batch_name),]
+        df <- df[which(df$path == batch_path),]
         id_wait_max <- df[which(df$wait == max(df$wait)), "batchid"]
         if (batch_par) {
             id_wait_max_par <- df[which(df$batchid %in% id_wait_max), "parallelizable"]
@@ -84,6 +86,7 @@ waitBatch <- function(batch_name, batch_par, batch_rank) {
         addWaitBatch(batchid = newid
             , queueid = queue_id
             , group = queue_group
+            , path = batch_path
             , name = batch_name
             , parallelizable = batch_par
             , wait = to_wait
@@ -123,7 +126,7 @@ releaseQueue <- function() {
     df <- df[-which(df$queueid == queue_id), ]
     writeWaitQueue(df = df)
     # Write historized.batch (priority 3)
-    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
+    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
     # Write historized queue  (priority 3)
     addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, startDate = qh$startDate, realStartDate = qh$realStartDate)
 }

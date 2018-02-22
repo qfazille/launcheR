@@ -1,4 +1,10 @@
-# Find different way of storing data (RSQLite ?)
+##### !! #####
+# Important note :
+# If modification on strucuture of waitqueue.RDS, waitbatch.RDS, historizedbatch.RDS or historizedqueue.RDS
+# Then you need to make the modification on the files stored in inst/extdata
+# This is going to change when RSQLite will be implemented.
+##### !! #####
+
 datafolder <- function() {
     return(file.path(system.file(package = "launcheR"), "extdata"))
 }
@@ -46,6 +52,7 @@ getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
         df <- data.frame(batchid = numeric()
                 , queueid = numeric()
                 , group = character()
+                , path = character()
                 , name = character()
                 , parallelizable = logical()
                 , wait = numeric()
@@ -69,6 +76,7 @@ getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
         df <- data.frame(queueid = numeric()
                     , batchid = numeric()
                     , group = character()
+                    , path = character()
                     , queuename = character()
                     , batchname = character()
                     , startDate = character()
@@ -137,35 +145,37 @@ launchWaitQueue <- function(id) {
     writeWaitQueue(df = df)
 }
 
-addWaitBatch <- function(batchid, queueid, group = NULL, name, parallelizable, wait = 0, progress = 0, startDate = getDate(), realStartDate = getDate(), endDate = NA) {
+addWaitBatch <- function(batchid, queueid, group = NULL, path, name, parallelizable, wait = 0, progress = 0, startDate = as.character(NA), realStartDate = as.character(NA), endDate = as.character(NA)) {
     stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress), is.null))))
     stopifnot(class(parallelizable) == "logical")
-    if (is.null(group)) group <- as.character(NA)
+    if (is.null(group)) group <- as.character(NA) # Need to keep this line because when group is explicitly called with NULL then I get arguments imply differing number of rows: 1, 0
     toInsert <- data.frame(batchid = batchid
                     , queueid = queueid
-                    , group = as.character(group)
+                    , group = group
+                    , path = path
                     , name = name
                     , parallelizable = parallelizable
                     , wait = wait
                     , progress = progress
                     , startDate = startDate
                     , realStartDate = realStartDate
-                    , endDate = as.character(endDate)
+                    , endDate = endDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "logical", "numeric", "numeric", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "logical", "numeric", "numeric", "character", "character", "character")))
     df <- getWaitBatch()
     df <- rbind(df, toInsert)
     writeWaitBatch(df = df)
 }
 
-addWaitQueue <- function(queueid, group = NA, name, wait = 0, startDate = getDate(), realStartDate = getDate()) {
+addWaitQueue <- function(queueid, group = NULL, name, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
     stopifnot(!any(unlist(lapply(list(queueid, name), is.null))))
+    if (is.null(group)) group <- as.character(NA) # Need to keep this line (same as in addWaitBatch function)
     toInsert <- data.frame(queueid = queueid
-                    , group = as.character(group)
+                    , group = group
                     , name = name
                     , wait = wait
                     , startDate = startDate
-                    , realStartDate = as.character(realStartDate)
+                    , realStartDate = realStartDate
                     , stringsAsFactors = FALSE)
     stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "numeric", "character", "character")))
     df <- getWaitQueue()
@@ -173,18 +183,19 @@ addWaitQueue <- function(queueid, group = NA, name, wait = 0, startDate = getDat
     writeWaitQueue(df = df)
 }
 
-addHistorizedBatch <- function(queueid, batchid, group, queuename, batchname, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, batchid, queuename, batchname, startDate, realStartDate, endDate), is.null))))
+addHistorizedBatch <- function(queueid, batchid, group, path, queuename, batchname, startDate, realStartDate, endDate = getDate()) {
+    stopifnot(!any(unlist(lapply(list(queueid, batchid, path, queuename, batchname, startDate, realStartDate, endDate), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , batchid = batchid
                     , group = as.character(group)
+                    , path = path
                     , queuename = queuename
                     , batchname = batchname
                     , startDate = startDate
                     , realStartDate = realStartDate
                     , endDate = endDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "character", "character")))
     df <- getHistorizedBatch()
     df <- rbind(df, toInsert)
     writeHistorizedBatch(df = df)

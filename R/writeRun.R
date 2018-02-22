@@ -70,7 +70,7 @@ runWaitBatch <- function(batch, runFile, params = FALSE) {
     stopifnot(!any(unlist(lapply(list(batch, runFile, params), is.null))))
     
     # Add 'launcheR:::waitBatch'
-    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\")' ", nullRedirection())
+    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' ", nullRedirection())
     line_ <- paste(rscriptOptions(execute = TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
     
