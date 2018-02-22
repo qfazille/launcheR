@@ -23,7 +23,20 @@ launcheRviewer <- function() {
                              div(style = "color:blue; font-weight:bold", "Historized queue(s)"),
                              DT::dataTableOutput("DT_hist_queue")
                          )
+            ),
+            miniTabPanel("Visualization", icon = icon("search"),
+                         miniContentPanel(
+                             fluidRow(
+                                 column(8,uiOutput("ui_Visu_SZI_queueid"))
+                                 ,column(2, checkboxInput("Visu_CBI_xlabs", label = "show x labs", value = TRUE))
+                                 ,column(2, checkboxInput("Visu_CBI_ylabs", label = "show y labs", value = TRUE))
+                             )
+                             ,fluidRow(
+                                 uiOutput("ui_PL_vis")
+                             )
+                         )
             )
+            
         )
     )
     
@@ -85,6 +98,45 @@ launcheRviewer <- function() {
             df <- getHistorizedQueue()
             DT::dataTableAjax(session, df, rownames = FALSE, outputId = "DT_hist_queue")
             DT::reloadData(proxy_HQ, resetPaging = FALSE, clearSelection = "none")
+        })
+        
+        #########
+        ## Vis ##
+        #########
+        visu <- reactiveValues(queueid = NULL)
+        
+        observeEvent(timer(), {
+            df <- getHistorizedQueue()
+            visu$queueid <- unique(df$queueid)
+        })
+        
+        observeEvent(visu$queueid, {
+            already_selected <- input$Visu_SZI_queueid
+            updateSelectizeInput(session, "Visu_SZI_queueid", choices = visu$queueid, selected = already_selected)
+        })
+        
+        output$ui_Visu_SZI_queueid <- renderUI({
+            if (is.null(visu$queueid)) return(div(style = "color:red; font-style:italic;", "No queue historized yet"))
+            selectizeInput("Visu_SZI_queueid", label = "Queue id(s)", choices = isolate(visu$queueid), multiple = TRUE)
+        })
+        
+        # Reactive containing the plot
+        rv_vis <- eventReactive(c(input$Visu_SZI_queueid, input$Visu_CBI_xlabs, input$Visu_CBI_ylabs), {
+            req(input$Visu_SZI_queueid)
+            p <- vis(input$Visu_SZI_queueid, show_xlabs = input$Visu_CBI_xlabs, show_ylabs = input$Visu_CBI_ylabs)
+            return(p)
+        })
+        
+        # RenderPlot
+        output$PL_vis <- renderPlot({
+            req(rv_vis())
+            rv_vis()
+        })
+        
+        # RenderUI of the RenderPlot
+        output$ui_PL_vis <- renderUI({
+            if (is.null(rv_vis())) return(div(style = "color:red; font-style:italic;", "Plot not run"))
+            plotOutput("PL_vis")
         })
         
         # Listen for 'done'.
