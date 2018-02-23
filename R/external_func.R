@@ -63,8 +63,6 @@ progress <- function(percentage = NULL) {
             if (percentage > 100) percentage <- 100
             df[which(df$batchid == BID & df$queueid == QID), "progress"]   <- percentage
             writeWaitBatch(df = df)
-        } else {
-            warning("BID and/or QID not found")
         }
     }
 }

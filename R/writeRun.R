@@ -80,9 +80,15 @@ runWaitBatch <- function(batch, runFile, params = FALSE) {
     line_ <- gatherCmd(cmd1, cmd2, background = !batch@waitBeforeNext)
     cat(line_, file = runFile, append = TRUE)
     
-    # Add sleep
+    # Add sleep, not to fire batch at the exact same second (for visualization)
     cmd <- getSleep()
     cat(cmd, file = runFile, append = TRUE)
+    
+    # If not background add wait
+    if (batch@waitBeforeNext) {
+        cmd <- getWait()
+        cat(cmd, file = runFile, append = TRUE)
+    }
 }
 
 # Add launcheR:::setRData
