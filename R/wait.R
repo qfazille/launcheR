@@ -13,7 +13,7 @@ waitFor <- function(type = c("queue", "batch"), id) {
             df <- getWaitBatch(with.done = FALSE)
             wait <- any(id %in% df$batchid)
         }
-        if (wait) Sys.sleep(10)
+        if (wait) Sys.sleep(2)
     }
 }
 
