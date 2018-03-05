@@ -18,9 +18,7 @@ runInit <- function(object) {
     
     # If tmpdir then write it in Renviron
     if (!is.null(object@tmpdir)) {
-        writeRenviron(prefix = "TMP", value = object@tmpdir)
-        writeRenviron(prefix = "TMPDIR", value = object@tmpdir)
-        writeRenviron(prefix = "TEMP", value = object@tmpdir)
+        cat(setTMP(object@tmpdir), file = runFile, append = TRUE)
     }
     
     # Write in runFile

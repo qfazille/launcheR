@@ -90,6 +90,11 @@ runRenviron <- function() {
     }
 }
 
+# Add TMP in Renviron if needed
+setTMP <- function(folder) {
+    return(paste0("echo TMP='", folder, "' >> .Renviron", linebreak()))
+}
+
 # sleep
 getSleep <- function() {
     if (sysname() == "Windows") {
