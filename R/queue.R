@@ -186,7 +186,7 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
         #       - creates RData
         #       - add lines in run.sh of setRdata
         #   - add line waitBatch in run.sh
-        runBatch(batch = object@batchs[[i]], runFile = runFile)
+        runBatch(batch = object@batchs[[i]], runFile = runFile, nbBatchs = length(object@batchs))
     }
 
     # Add releaseQueue
@@ -198,7 +198,8 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     }
 
     # Launch file in background
-    cmd <- launchFile(runFile = runFile)
+    logFile <- file.path(object@folder, "run.log")
+    cmd <- launchFile(runFile = runFile, logFile = logFile)
     system(cmd)
 })
 

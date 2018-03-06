@@ -143,12 +143,14 @@ gatherCmd <- function(..., background = FALSE) {
 }
 
 # Set cmd to pass to system function
-launchFile <- function(runFile = NULL) {
+launchFile <- function(runFile = NULL, logFile = NULL) {
     stopifnot(!is.null(runFile))
+    stopifnot(!is.null(logFile))
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        line_ <- paste(runFile, "&")
+        # Set in background and redirect outputs to run.log
+        line_ <- paste(runFile, "&>>", logFile, "&")
         return(line_)
     }
 }

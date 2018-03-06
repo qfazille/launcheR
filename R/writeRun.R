@@ -23,9 +23,9 @@ runInit <- function(object) {
     
     # Write in runFile
     if (is.null(object@group)) {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")' ", nullRedirection())
+        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")' ", linebreak())
     } else {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")' ", nullRedirection())
+        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")' ", linebreak())
     }
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     
@@ -37,7 +37,7 @@ runInit <- function(object) {
     return(runFile)
 }
 
-runBatch <- function(batch, runFile) {
+runBatch <- function(batch, runFile, nbBatchs) {
         
         # Get info from batch object
         params <- batch@params
@@ -60,15 +60,15 @@ runBatch <- function(batch, runFile) {
             runSetRData(runFile = runFile, file_ = RData_file)
         }
         # add line 'launcheR:::waitBatch' + Rscript batch
-        runWaitBatch(batch = batch, runFile = runFile, params = exist_params)
+        runWaitBatch(batch = batch, runFile = runFile, params = exist_params, nbBatchs = nbBatchs)
 }
 
-runWaitBatch <- function(batch, runFile, params = FALSE) {
+runWaitBatch <- function(batch, runFile, params = FALSE, nbBatchs) {
     # check inputs
     stopifnot(!any(unlist(lapply(list(batch, runFile, params), is.null))))
     
     # Add 'launcheR:::waitBatch'
-    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' ", nullRedirection())
+    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' ", linebreak())
     line_ <- paste(rscriptOptions(execute = TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
     
@@ -79,11 +79,13 @@ runWaitBatch <- function(batch, runFile, params = FALSE) {
     cat(line_, file = runFile, append = TRUE)
     
     # Add sleep, not to fire batch at the exact same second (for visualization)
-    cmd <- getSleep()
-    cat(cmd, file = runFile, append = TRUE)
+    if (!batch@waitBeforeNext & batch@Rank != nbBatchs) {
+        cmd <- getSleep()
+        cat(cmd, file = runFile, append = TRUE)
+    }
     
-    # If not background add wait
-    if (batch@waitBeforeNext) {
+    # If not background add wait (only if != nbBatch because the releaseQueue has already a wait before)
+    if (batch@waitBeforeNext & batch@Rank != nbBatchs) {
         cmd <- getWait()
         cat(cmd, file = runFile, append = TRUE)
     }
@@ -92,7 +94,7 @@ runWaitBatch <- function(batch, runFile, params = FALSE) {
 # Add launcheR:::setRData
 runSetRData <- function(runFile, file_) {
     stopifnot(!any(unlist(lapply(list(runFile, file_), is.null))))
-    cmd <- paste0("'launcheR:::setRData(file=\"", file_, "\")' ", nullRedirection())
+    cmd <- paste0("'launcheR:::setRData(file=\"", file_, "\")' ", linebreak())
     line_ <- paste(rscriptOptions(execute = TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
 }
@@ -101,7 +103,7 @@ runSetRData <- function(runFile, file_) {
 runReleaseQueue <- function(runFile = NULL) {
     stopifnot(!is.null(runFile))
     wait_line <- getWait() # This line in case user set waitBeforeNext = FALSE at the last batch of queue.
-    cmd <- paste0("'launcheR:::releaseQueue()' ", nullRedirection())
+    cmd <- paste0("'launcheR:::releaseQueue()' ", linebreak())
     cmd_line <- paste(rscriptOptions(execute = TRUE), cmd)
     cat(wait_line, cmd_line, file = runFile, append = TRUE, sep = "")
 }
