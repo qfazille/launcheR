@@ -1,28 +1,22 @@
 newidQueue <- function() {
-    df <- getWaitQueue()
-    if (nrow(df) > 0) {
-        return(max(df$queueid) + 1)
+    wq <- getWaitQueue()
+    hq <- getHistorizedQueue()
+    all_queueid <- c(wq$queueid, hq$queueid)
+    if (length(all_queueid) > 0) {
+        return(max(all_queueid) + 1)
     } else {
-        df <- getHistorizedBatch()
-        if (nrow(df) > 0) {
-            return(max(df$queueid) + 1)
-        } else {
-            return(1)
-        }
+        return(1)
     }
 }
 
 newidBatch <- function() {
-    df <- getWaitBatch()
-    if (nrow(df) > 0) {
-        return(max(df$batchid) + 1)
+    wb <- getWaitBatch()
+    hb <- getHistorizedBatch()
+    all_batchid <- c(wb$batchid, hb$batchid)
+    if (length(all_batchid) > 0) {
+        return(max(all_batchid) + 1)
     } else {
-        df <- getHistorizedBatch()
-        if (nrow(df) > 0) {
-            return(max(df$batchid) + 1)
-        } else {
-            return(1)
-        }
+        return(1)
     }
 }
 
