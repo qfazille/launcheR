@@ -75,7 +75,7 @@ createDB <- function(datafilepath) {
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
 emptyTable <- function(table_name) {
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, get_emptyTable(table_name))
+    dbWriteTable(mydb, table_name, get_emptyTable(table_name), overwrite = TRUE)
     dbDisconnect(mydb)
 }
 
