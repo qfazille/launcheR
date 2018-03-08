@@ -66,3 +66,107 @@ progress <- function(percentage = NULL) {
         }
     }
 }
+
+#' @rdname getWaitQueue
+#' @title getWaitQueue
+#' @description Get the waiting queue
+#' @param reset Logical If true then reset table. (Default FALSE)
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom RSQLite SQLite
+#' @export
+#' @examples
+#' \dontrun{
+#' getWaitQueue()
+#' }
+getWaitQueue <- function(reset = FALSE) {
+    checkDBExistance()
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    if (reset) {
+        emptyTable("WaitQueue")
+        df <- get_emptyTable("WaitQueue")
+    } else {
+        df <- dbReadTable(conn = mydb, name = "WaitQueue")
+    }
+    dbDisconnect(mydb)
+    return(df)
+}
+
+#' @rdname getWaitBatch
+#' @title getWaitBatch
+#' @description Get the waiting queue
+#' @param with.done Logical If true show also ended batchs. (Default TRUE)
+#' @param reset Logical If true then reset table. (Default FALSE)
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom RSQLite SQLite
+#' @export
+#' @examples
+#' \dontrun{
+#' getWaitBatch()
+#' }
+getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
+    checkDBExistance()
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    if (reset) {
+        emptyTable("WaitBatch")
+        df <- get_emptyTable("WaitBatch")
+    } else {
+        df <- dbReadTable(conn = mydb, name = "WaitBatch")
+        if (!with.done) df <- df[which(df$progress >= 0),]
+    }
+    dbDisconnect(mydb)
+    return(df)
+}
+
+#' @rdname getHistorizedBatch
+#' @title getHistorizedBatch
+#' @description Get the waiting queue
+#' @param reset Logical If true then reset table. (Default FALSE)
+#' @param queueid Numeric vector List of queueid to show. If NULL shows all. (Default NULL)
+#' @param batchid Numeric vector List of batchid to show. If NULL shows all. (Default NULL)
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom RSQLite SQLite
+#' @export
+#' @examples
+#' \dontrun{
+#' getHistorizedBatch()
+#' }
+getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
+    checkDBExistance()
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    if (reset) {
+        emptyTable("HistorizedBatch")
+        df <- get_emptyTable("HistorizedBatch")
+    } else {
+        df <- dbReadTable(conn = mydb, name = "HistorizedBatch")
+        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
+        if (!is.null(batchid)) df <- df[which(df$batchid %in% batchid), ]
+    }
+    dbDisconnect(mydb)
+    return(df)
+}
+
+#' @rdname getHistorizedQueue
+#' @title getHistorizedQueue
+#' @description Get the waiting queue
+#' @param reset Logical If true then reset table. (Default FALSE)
+#' @param queueid Numeric vector List of queueid to show. If NULL shows all. (Default NULL)
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom RSQLite SQLite
+#' @export
+#' @examples
+#' \dontrun{
+#' getHistorizedQueue()
+#' }
+getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
+    checkDBExistance()
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    if (reset) {
+        emptyTable("HistorizedQueue")
+        df <- get_emptyTable("HistorizedQueue")
+    } else {
+        df <- dbReadTable(conn = mydb, name = "HistorizedQueue")
+        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
+    }
+    dbDisconnect(mydb)
+    return(df)
+}

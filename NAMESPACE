@@ -2,6 +2,10 @@
 
 export(addBatch)
 export(createQueue)
+export(getHistorizedBatch)
+export(getHistorizedQueue)
+export(getWaitBatch)
+export(getWaitQueue)
 export(launch)
 export(progress)
 export(reset)

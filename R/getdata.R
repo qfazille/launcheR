@@ -75,68 +75,8 @@ createDB <- function(datafilepath) {
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
 emptyTable <- function(table_name) {
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, , get_emptyTable(table_name))
+    dbWriteTable(mydb, get_emptyTable(table_name))
     dbDisconnect(mydb)
-}
-
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
-getWaitQueue <- function(reset = FALSE) {
-    checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    if (reset) {
-        emptyTable("WaitQueue")
-        df <- get_emptyTable("WaitQueue")
-    } else {
-        df <- dbReadTable(conn = mydb, name = "WaitQueue")
-    }
-    dbDisconnect(mydb)
-    return(df)
-}
-
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
-getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
-    checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    if (reset) {
-        emptyTable("WaitBatch")
-        df <- get_emptyTable("WaitBatch")
-    } else {
-        df <- dbReadTable(conn = mydb, name = "WaitBatch")
-        if (!with.done) df <- df[which(df$progress >= 0),]
-    }
-    dbDisconnect(mydb)
-    return(df)
-}
-
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
-getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
-    checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    if (reset) {
-        emptyTable("HistorizedBatch")
-        df <- get_emptyTable("HistorizedBatch")
-    } else {
-        df <- dbReadTable(conn = mydb, name = "HistorizedBatch")
-        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
-        if (!is.null(batchid)) df <- df[which(df$batchid %in% batchid), ]
-    }
-    dbDisconnect(mydb)
-    return(df)
-}
-
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
-getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
-    checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    if (reset) {
-        emptyTable("HistorizedQueue")
-        df <- get_emptyTable("HistorizedQueue")
-    } else {
-        df <- dbReadTable(conn = mydb, name = "HistorizedQueue")
-        if (!is.null(queueid)) df <- df[which(df$queueid %in% queueid), ]
-    }
-    dbDisconnect(mydb)
-    return(df)
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
