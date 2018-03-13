@@ -111,7 +111,7 @@ getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
         df <- get_emptyTable("WaitBatch")
     } else {
         df <- dbReadTable(conn = mydb, name = "WaitBatch")
-        if (!with.done) df <- df[which(df$progress >= 0),]
+        if (!with.done) df <- df[which(df$wait >= 0),] # Because when batch end wait == -1
     }
     dbDisconnect(mydb)
     return(df)

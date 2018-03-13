@@ -213,3 +213,19 @@ DateChar2Num <- function(date) {
 Num2DateChar <- function(num) {
     format(as.POSIXct(num, origin = "1970-01-01"), format = "%Y-%m-%d %H:%M:%S")
 }
+
+internalLogRedir <- function(logfile = "run.log") {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return(paste(">>", logfile, "2>&1")
+    }
+}
+
+errorRedir <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("2>&1")
+    }
+}
