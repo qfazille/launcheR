@@ -100,38 +100,51 @@ waitBatch <- function(batch_name, batch_par, batch_rank, batch_path) {
     }
 }
 
-releaseBatch <- function(batch_rank) {
-    stopifnot(!is.null(batch_rank))
-    batch_id <- getBatchidFromRank(batch_rank)
+releaseBatch <- function(id = NULL, batch_rank = NULL) {
+    stopifnot(any(!sapply(list(id,batch_rank), is.null)))
+    if (is.null(id)) {
+        id <- getBatchidFromRank(batch_rank)
+    }
     df <- getWaitBatch()
     # Set wait to -1 (means batch not running anymore but queue still running)
-    df[which(df$batchid == batch_id), "wait"]       <- -1
-    df[which(df$batchid == batch_id), "progress"]   <- 100
-    df[which(df$batchid == batch_id), "endDate"]    <- getDate()
+    df[which(df$batchid == id), "wait"]       <- -1
+    df[which(df$batchid == id), "progress"]   <- 100
+    df[which(df$batchid == id), "endDate"]    <- getDate()
     writeWaitBatch(df = df)
 }
 
-releaseQueue <- function() {
-    queue_id    <- getQueueid()
-    queue_name  <- getQueuename()
-    queue_owner <- getQueueowner()
+releaseQueue <- function(id = NULL) {
+    if (is.null(id)) {
+        id    <- getQueueid()
+    }
+    
+    # Get queuename & queueowner
+    tmp <- getWaitQueue()
+    queue_name  <- unique(tmp[which(tmp$queueid == id), "name"]) # should be already unique
+    queue_owner <- unique(tmp[which(tmp$queueid == id), "owner"])# should be already unique
     
     # Write waitBatch (priority 1)
     df <- getWaitBatch()
-    bh <- df[which(df$queueid == queue_id), ]
-    if (nrow(bh) == 0) warning("batch(s) already removed")
-    df <- df[-which(df$queueid == queue_id), ]
-    writeWaitBatch(df = df)
+    bh <- df[which(df$queueid == id), ]
+    if (nrow(bh) == 0) {
+        warning("batch(s) already removed")
+    } else {
+        df <- df[-which(df$queueid == id), ]
+        writeWaitBatch(df = df)
+        addHistorizedBatch(queueid = id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
+    }
     # Write waitQueue (priority 2)
     df <- getWaitQueue()
-    qh <- df[which(df$queueid == queue_id), ]
-    if (nrow(qh) != 1) warning("queue already removed")
-    df <- df[-which(df$queueid == queue_id), ]
-    writeWaitQueue(df = df)
-    # Write historized.batch (priority 3)
-    addHistorizedBatch(queueid = queue_id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
-    # Write historized queue  (priority 3)
-    addHistorizedQueue(queueid = queue_id, group = qh$group, queuename = qh$name, owner = queue_owner, startDate = qh$startDate, realStartDate = qh$realStartDate)
+    qh <- df[which(df$queueid == id), ]
+    if (nrow(qh) == 0) {
+        warning("queue already removed")
+    } else if (nrow(qh) == 1) {
+        df <- df[-which(df$queueid == id), ]
+        writeWaitQueue(df = df)
+        addHistorizedQueue(queueid = id, group = qh$group, queuename = qh$name, owner = queue_owner, startDate = qh$startDate, realStartDate = qh$realStartDate)
+    } else {
+        stop(paste("More than one row in WaitQueue with queueid", id))
+    }
 }
 
 writeRenviron <- function(prefix, value) {
