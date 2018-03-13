@@ -218,7 +218,7 @@ internalLogRedir <- function(logfile = "run.log") {
     if (sysname() == "Windows") {
         return(NULL)
     } else if (sysname() == "Unix") {
-        return(paste(">>", logfile, "2>&1")
+        return(paste(">>", logfile, "2>&1"))
     }
 }
 
