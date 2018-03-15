@@ -18,18 +18,24 @@ runInit <- function(object) {
     
     # If tmpdir then write it in Renviron
     if (!is.null(object@tmpdir)) {
-        cat(setTMP(object@tmpdir), file = runFile, append = TRUE)
-        cat(exportTMP(object@tmpdir), file = runFile, append = TRUE)
+        cat(setTMPDIR(object@tmpdir), file = runFile, append = TRUE)
+        # Used for debug
+        {
+            #cat(setTMP(object@tmpdir), file = runFile, append = TRUE)
+            #cat(setTEMP(object@tmpdir), file = runFile, append = TRUE)
+            #cat(exportTEMP(object@tmpdir), file = runFile, append = TRUE)
+            #cat(exportTMPDIR(object@tmpdir), file = runFile, append = TRUE)
+            #cat(exportTMP(object@tmpdir), file = runFile, append = TRUE)
+        }
     }
     
     # Write in runFile
     if (is.null(object@group)) {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")' ", linebreak())
+        internalFile <- createInternal(paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")'"))
     } else {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")' ", linebreak())
+        internalFile <- createInternal(paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")'"))
     }
-    line_ <- paste(rscriptOptions(execute=TRUE), cmd)
-    
+    line_ <- paste(internalFile, runInternalFunction(), sep = linebreak())
     cat(line_, file = runFile, append = TRUE)
     
     # Make file executable
@@ -69,18 +75,19 @@ runWaitBatch <- function(batch, runFile, params = FALSE, nbBatchs) {
     stopifnot(!any(unlist(lapply(list(batch, runFile, params), is.null))))
     
     # Add 'launcheR:::waitBatch'
-    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' ", linebreak())
-    line_ <- paste(rscriptOptions(execute = TRUE), cmd)
+    internalFile <- createInternal(paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' "))
+    line_ <- paste(internalFile, runInternalFunction(), sep = linebreak())
     cat(line_, file = runFile, append = TRUE)
     
     # Add 'Rscript /path/batch' & 'launcheR:::releaseBatch' in the same line + & if waitBeforeNext = FALSE
     cmd1 <- paste(rscriptOptions(restore = params), batch@path, redirect_log(), batch@logfile, errorRedir())
     cmd2a <- paste(getIfStatus())
-    cmd2b <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"OK\")' "))
+    cmd2b <- createInternal(paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"OK\")'"))
     cmd2c <- paste(getElse())
-    cmd2d <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"KO\")' "))
+    cmd2d <- createInternal(paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"KO\")'"))
     cmd2e <- paste(getEndIf())
-    cmd2  <- paste(cmd2a, cmd2b, cmd2c, cmd2d, cmd2e, sep = linebreak())
+    cmd2f <- paste(runInternalFunction())
+    cmd2  <- paste(cmd2a, cmd2b, cmd2c, cmd2d, cmd2e, cmd2f, sep = linebreak())
     line_ <- gatherCmd(cmd1, cmd2, background = !batch@waitBeforeNext)
     cat(line_, file = runFile, append = TRUE)
     
@@ -100,8 +107,8 @@ runWaitBatch <- function(batch, runFile, params = FALSE, nbBatchs) {
 # Add launcheR:::setRData
 runSetRData <- function(runFile, file_) {
     stopifnot(!any(unlist(lapply(list(runFile, file_), is.null))))
-    cmd <- paste0("'launcheR:::setRData(file=\"", file_, "\")' ", linebreak())
-    line_ <- paste(rscriptOptions(execute = TRUE), cmd)
+    internalFile <- createInternal(paste0("'launcheR:::setRData(file=\"", file_, "\")'"))
+    line_ <- paste(internalFile, runInternalFunction(), sep = linebreak())
     cat(line_, file = runFile, append = TRUE)
 }
 
@@ -109,9 +116,9 @@ runSetRData <- function(runFile, file_) {
 runReleaseQueue <- function(runFile = NULL) {
     stopifnot(!is.null(runFile))
     wait_line <- getWait() # This line in case user set waitBeforeNext = FALSE at the last batch of queue.
-    cmd <- paste0("'launcheR:::releaseQueue()' ", linebreak())
-    cmd_line <- paste(rscriptOptions(execute = TRUE), cmd)
-    cat(wait_line, cmd_line, file = runFile, append = TRUE, sep = "")
+    internalFile <- createInternal(paste0("'launcheR:::releaseQueue()' "))
+    line_ <- paste(wait_line, internalFile, runInternalFunction(), sep = linebreak())
+    cat(line_, file = runFile, append = TRUE, sep = "")
 }
 
 # Add remove temp folder

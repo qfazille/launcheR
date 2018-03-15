@@ -1,7 +1,7 @@
 Package: launcheR
 Type: Package
 Title: Rscripts easy
-Version: 0.0.1.9006
+Version: 0.0.1.9019
 Authors@R: c(person("Quentin", "Fazilleau", , "quentin.fazilleau@gmail", role = c("aut", "cre")))
 Maintainer: qfaz <quentin.fazilleau@gmail.com>
 Description: Easy Rscript launch with waiting queue management.
@@ -11,3 +11,4 @@ LazyData: true
 RoxygenNote: 6.0.1
 Imports: stats, methods, utils, shiny, miniUI, DT, magrittr, ggplot2, RSQLite, DBI
 Suggests: testthat, rstudioapi
+Repository: gauCRAN
