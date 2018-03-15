@@ -100,8 +100,8 @@ waitBatch <- function(batch_name, batch_par, batch_rank, batch_path) {
     }
 }
 
-releaseBatch <- function(id = NULL, batch_rank = NULL) {
-    stopifnot(any(!sapply(list(id,batch_rank), is.null)))
+releaseBatch <- function(id = NULL, batch_rank = NULL, status = "OK") {
+    stopifnot(any(!sapply(list(id, batch_rank, status), is.null)))
     if (is.null(id)) {
         id <- getBatchidFromRank(batch_rank)
     }
@@ -109,6 +109,7 @@ releaseBatch <- function(id = NULL, batch_rank = NULL) {
     # Set wait to -1 (means batch not running anymore but queue still running)
     df[which(df$batchid == id), "wait"]       <- -1
     df[which(df$batchid == id), "progress"]   <- 100
+    df[which(df$batchid == id), "status"]     <- status
     df[which(df$batchid == id), "endDate"]    <- getDate()
     writeWaitBatch(df = df)
 }
@@ -131,7 +132,7 @@ releaseQueue <- function(id = NULL) {
     } else {
         df <- df[-which(df$queueid == id), ]
         writeWaitBatch(df = df)
-        addHistorizedBatch(queueid = id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
+        addHistorizedBatch(queueid = id, batchid = bh$batchid, group = bh$group, path = bh$path, queuename = queue_name, batchname = bh$name, status = bh$status, startDate = bh$startDate, realStartDate = bh$realStartDate, endDate = bh$endDate)
     }
     # Write waitQueue (priority 2)
     df <- getWaitQueue()

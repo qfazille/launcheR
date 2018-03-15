@@ -150,7 +150,7 @@ launchFile <- function(runFile = NULL, logFile = NULL) {
         return(NULL)
     } else if (sysname() == "Unix") {
         # Set in background and redirect outputs to run.log
-        line_ <- paste(runFile, "&>>", logFile, "&")
+        line_ <- paste(runFile, ">>", logFile, errorRedir(), "&")
         return(line_)
     }
 }
@@ -229,3 +229,28 @@ errorRedir <- function() {
         return("2>&1")
     }
 }
+
+getIfStatus <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("if [ $? -eq 0 ]; then")
+    }
+}
+
+getElse <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("else")
+    }
+}
+
+getEndIf <- function() {
+    if (sysname() == "Windows") {
+        return(NULL)
+    } else if (sysname() == "Unix") {
+        return("fi")
+    }
+}
+

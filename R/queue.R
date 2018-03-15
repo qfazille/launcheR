@@ -38,11 +38,11 @@ setMethod(f = "initialize"
         {
             # valid name
             .Object@name <- validName(name)
-            
+
             # valid owner
             if (is.null(owner))     owner <- ""
             if (nchar(owner) > 20)  owner <- substr(owner, 1, 20)
-            
+
             # Don't need to validate group, clean, batchs
             .Object@group     <- group
             .Object@clean     <- clean

@@ -27,6 +27,7 @@ get_emptyTable <- function(table_name) {
                     , parallelizable = logical()
                     , wait = numeric()
                     , progress = numeric()
+                    , status = character()
                     , startDate = character()
                     , realStartDate = character()
                     , endDate = character()
@@ -47,6 +48,7 @@ get_emptyTable <- function(table_name) {
                     , path = character()
                     , queuename = character()
                     , batchname = character()
+                    , status = character()
                     , startDate = character()
                     , realStartDate = character()
                     , endDate = character()
@@ -134,7 +136,7 @@ launchWaitQueue <- function(id) {
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addWaitBatch <- function(batchid, queueid, group = NULL, path, name, parallelizable, wait = 0, progress = 0, startDate = as.character(NA), realStartDate = as.character(NA), endDate = as.character(NA)) {
+addWaitBatch <- function(batchid, queueid, group = NULL, path, name, parallelizable, wait = 0, progress = 0, status = as.character(NA), startDate = as.character(NA), realStartDate = as.character(NA), endDate = as.character(NA)) {
     stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress), is.null))))
     stopifnot(class(parallelizable) == "logical")
     if (is.null(group)) group <- as.character(NA) # Need to keep this line because when group is explicitly called with NULL then I get arguments imply differing number of rows: 1, 0
@@ -175,19 +177,20 @@ addWaitQueue <- function(queueid, group = NULL, name, owner, wait = 0, startDate
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addHistorizedBatch <- function(queueid, batchid, group, path, queuename, batchname, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, batchid, path, queuename, batchname, startDate, realStartDate, endDate), is.null))))
+addHistorizedBatch <- function(queueid, batchid, group, path, queuename, batchname, status, startDate, realStartDate, endDate = getDate()) {
+    stopifnot(!any(unlist(lapply(list(queueid, batchid, path, queuename, batchname, status, startDate, realStartDate, endDate), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , batchid = batchid
                     , group = as.character(group)
                     , path = path
                     , queuename = queuename
                     , batchname = batchname
+                    , status = status
                     , startDate = startDate
                     , realStartDate = realStartDate
                     , endDate = endDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "character", "character", "character")))
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     dbWriteTable(mydb, "HistorizedBatch", toInsert, append = TRUE)
     dbDisconnect(mydb)
