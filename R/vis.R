@@ -67,7 +67,7 @@ addMNB <- function(queueid) {
 dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
     stopifnot(length(queueid) > 0)
     stopifnot(show_batch %in% c("alias", "path"))
-    
+
     toreturn <- data.frame(center_x = numeric(), center_y = numeric(), height = numeric(), width = numeric()
                        , xmin = numeric(), xmax = numeric(), ymin = numeric(), ymax = numeric()
                        , color = character(), label = character(), stringsAsFactors = FALSE)
@@ -79,7 +79,7 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
         EDQ <- getEDQ(queueid = CQ)
         SDQ <- getSDQ(queueid = CQ)
         RSDQ <- getRSDQ(queueid = CQ)
-        
+
         # wait process
         wp <- data.frame(center_x = (SDQ+RSDQ)/2
                         , center_y = 1/2 + (QR-1)*1.5
@@ -92,7 +92,7 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
                         , color = "grey70"
                         , label = NA
                         , ylabels = NA, stringsAsFactors = FALSE)
-        
+
         # wait due to launcheR processes
         wl <- data.frame(center_x = (EDQ+RSDQ)/2
                         , center_y = 1/2 + (QR-1)*1.5
@@ -105,18 +105,18 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
                         , color = "wheat1"
                         , label = NA
                         , ylabels = NA, stringsAsFactors = FALSE)
-        
+
         plotdf1 <- rbind(wp, wl)
-        
+
         # batchs & wait batchs
         df <- addMNB(queueid = CQ)
-        
+
         # Transform date
         df$startDate <- DateChar2Num(df$startDate)
         df$realStartDate <- DateChar2Num(df$realStartDate)
         df$endDate <- DateChar2Num(df$endDate)
         df$MED <- DateChar2Num(df$MED)
-        
+
         # batch
         if (show_batch == "alias") {
             plotdfb <- df[,c("batchid", "batchname", "realStartDate", "endDate", "MNB", "rankBatch")]
@@ -125,13 +125,13 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
         }
         plotdfb$color <- "lightskyblue1"
         colnames(plotdfb) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
-        
+
         # wait
         plotdfw <- df[,c("batchid", "batchname", "startDate", "realStartDate", "MNB", "rankBatch")]
         plotdfw$color <- "grey60"
         colnames(plotdfw) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
         plotdfw$label <- NA
-        
+
         # wait // batch
         plotdfwp <- df[which(df$endDate != df$MED), c("batchid", "batchname", "endDate", "MED", "MNB", "rankBatch")]
         if (nrow(plotdfwp) > 0) {
@@ -139,33 +139,33 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
             colnames(plotdfwp) <- c("batchid", "label", "SD", "ED", "MNB", "RB", "color")
             plotdfwp$label <- NA
         }
-        
+
         # rbind df
         fdf <- rbind(plotdfb, plotdfw, plotdfwp)
-        
+
         # centers x/y
         fdf$center_x <- (fdf$SD + fdf$ED)/2
         fdf$center_y <- 1/(2*fdf$MNB) + (fdf$RB-1)/fdf$MNB + (QR-1)*1.5
-        
+
         # height & width
         fdf$height <- 1/fdf$MNB
         fdf$width  <- fdf$ED - fdf$SD
-        
+
         # x/y min/max
         fdf$xmin <- fdf$SD
         fdf$xmax <- fdf$ED
         fdf$ymin <- (fdf$RB-1)*(1/fdf$MNB) + (QR-1)*1.5
         fdf$ymax <- (fdf$RB)*(1/fdf$MNB) + (QR-1)*1.5
-        
+
         # y labs
         fdf$ylabels <- getYlabs(queueid = CQ, show_queue = show_queue, show_group = show_group, show_owner = show_owner)
-        
+
         # keep only rectangles that exists
         fdf <- fdf[which(fdf$width > 0),]
         plotdf2 <- fdf[,c("center_x", "center_y", "height", "width", "xmin", "xmax", "ymin", "ymax", "color", "label", "ylabels")]
-        
+
         plotdf <- rbind(plotdf1, plotdf2)
-        
+
         toreturn <- rbind(toreturn, plotdf)
     }
     return(toreturn)
@@ -174,7 +174,8 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
 #' @rdname vis
 #' @title vis
 #' @description visualize one or several queue in the time.
-#' @param queueid Numeric Vector of queueid.
+#' @param queueid Numeric Vector of queueid. (Default NULL)
+#' @param last Numeric Number of last queue to display. Used only if queueid not specified (Default NULL)
 #' @param show_xlabs Logical Display x labs. (Default TRUE)
 #' @param show_ylabs Logical Display y labs. (Default TRUE)
 #' @param show_queue Logical Display queue name. (Default TRUE)
@@ -188,7 +189,12 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
 #' \dontrun{
 #' vis(c(1:3))
 #' }
-vis <- function(queueid, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
+vis <- function(queueid = NULL, last, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
+    if (is.null(queueid) & is.null(last)) {
+        queueid <- max(getHistorizedBatch()$queueid)
+    } else if (is.null(queueid)) {
+        queueid <- unique(sort(getHistorizedBatch()$queueid, decreasing = TRUE))[1:last]
+    }
     # check queueid is in historizedBatch
     df <- getHistorizedBatch(queueid = queueid)
     if (nrow(df) == 0) stop(paste("queueid(s)", paste(queueid, collapse = ", "), "don't exists"))

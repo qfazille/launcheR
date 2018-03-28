@@ -4,11 +4,14 @@
 \alias{vis}
 \title{vis}
 \usage{
-vis(queueid, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE,
-  show_group = TRUE, show_owner = TRUE, show_batch = "alias")
+vis(queueid = NULL, last, show_xlabs = TRUE, show_ylabs = TRUE,
+  show_queue = TRUE, show_group = TRUE, show_owner = TRUE,
+  show_batch = "alias")
 }
 \arguments{
-\item{queueid}{Numeric Vector of queueid.}
+\item{queueid}{Numeric Vector of queueid. (Default NULL)}
+
+\item{last}{Numeric Number of last queue to display. Used only if queueid not specified (Default NULL)}
 
 \item{show_xlabs}{Logical Display x labs. (Default TRUE)}
 
