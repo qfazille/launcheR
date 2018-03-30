@@ -139,7 +139,7 @@ q2 <- createQueue()
 q1 <- addBatch(object = q1, path = "./batch1.R", parallelizable = FALSE)
 q1 <- addBatch(object = q1, path = "./batch2.R")
 
-# Add batch3.R in q2
+# Add batch1.R in q2
 q2 <- addBatch(object = q2, path = "./batch1.R")
 
 # launch queues
@@ -181,6 +181,83 @@ vis(last = 1)
 
 **No constraint on number and type of parameters (including objects).**
 
-## Progress
+## Addins & Progress
 
-## Addins
+> Keep track of your batchs progress with the Addins & launcheR::progress
+
+The RStudio Addins contains 
+
+ * running queue(s) 
+ * historized queue(s)
+ * queue(s) visualization
+
+
+**batch6.R**
+
+````{r, eval = FALSE}
+library(launcheR)
+
+stopifnot(exists("time_to_wait"))
+
+advance <- 0
+wait_loop <- round(time_to_wait / 10)
+
+for (i in 1:10) {
+    Sys.sleep(wait_loop)
+    advance <- advance + 10
+    progress(advance)
+}
+````
+
+````{r, eval = FALSE}
+q <- createQueue(name = "demo_addins")
+q <- addBatch(q, path = "./batch6.R", params = list(time_to_wait = 20))
+launch(q)
+````
+
+![](./tools/README-addins_progress.gif)
+
+## Addins visualization
+
+> Have a good scheduling overview
+
+````{r, eval = FALSE}
+q1 <- createQueue(name = "demo_queue1", group = "demo", folder = ".", clean = FALSE)
+q1 <- addBatch(q1, path = "./batch6.R", params = list(time_to_wait = 20), waitBeforeNext = FALSE)
+q1 <- addBatch(q1, path = "./batch6.R", params = list(time_to_wait = 30))
+
+q2 <- createQueue(name = "demo_queue2", group = "demo")
+q2 <- addBatch(q2, path = "./batch6.R", params = list(time_to_wait = 10))
+
+q3 <- createQueue(name = "demo_queue3", group = "other_group")
+q3 <- addBatch(q3, path = "./batch6.R", params = list(time_to_wait = 50))
+
+launch(q1)
+launch(q2)
+launch(q3)
+````
+
+
+## Behind the scene
+
+`launcheR` creates a folder that contains
+
+ * `.RData` with parameters
+ * `.Renviron` with internal informations
+ * `logs` folder
+ * `run.sh` the shell file that launch scripts
+ * `run.log` log of shell file
+ 
+*Available customization in `createQueue` function :*
+
+ * `folder` the location where the above folder is created (Default tempdir())
+ * `clean` if this folder is kept or not at the end of the queue (Default TRUE)
+ * `logs` if you want to set the logs folder location elsewhere.
+ * `name` & `owner` if you want to change the username that appears in running & historized queue(s)
+ * `tmpdir` to be redefined if you use (RStudio Connect < 1.5.10)
+
+*Available customization in `addBatch` function :*
+
+ * `name` if you want to change the batch name that appears in running & historized batch(s)
+ * `logfile` if you want to redirect log in a particular file
+

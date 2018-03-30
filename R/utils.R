@@ -205,7 +205,7 @@ validName <- function(name = NULL) {
 checkBatchPath <- function(path = NULL) {
     stopifnot(!is.null(path))
     # extension must be .R
-    stopifnot(tools::file_ext(path) == "R")
+    stopifnot(toupper(tools::file_ext(path)) == "R")
     if (file.access(path, mode = 0) == -1) stop("Filepath must exists")
     return(TRUE)
 }
