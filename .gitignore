@@ -5,3 +5,4 @@
 R_files.bat
 inst/extdata/*
 my_readme.txt
+.Renviron

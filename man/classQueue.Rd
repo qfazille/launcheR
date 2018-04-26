@@ -25,7 +25,7 @@ This class is used to store follwing slot
 
 \item{\code{clean}}{Logical Whether or not the working directory folder should be removed. (Default TRUE)}
 
-\item{\code{tmpdir}}{Character If use through RSConnect then you must define a tmpdir not in /tmp/*. (Default TRUE)}
+\item{\code{tmpdir}}{Character If use through RSConnect you can redefine a tmpdir not in /tmp/*. (Default NULL)}
 }}
 
 \author{

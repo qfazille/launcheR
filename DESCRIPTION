@@ -4,11 +4,10 @@ Title: Rscripts easy
 Version: 0.0.1.9020
 Authors@R: c(person("Quentin", "Fazilleau", , "quentin.fazilleau@gmail", role = c("aut", "cre")))
 Maintainer: qfaz <quentin.fazilleau@gmail.com>
-Description: Easy Rscript launch with waiting queue management.
+Description: Easy Rscript launch with waiting queue management. If use on Shiny Application through RSConnect must use version > 1.5.10.
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 Imports: stats, methods, utils, shiny, miniUI, DT, magrittr, ggplot2, RSQLite, DBI
 Suggests: testthat, rstudioapi
-Repository: gauCRAN

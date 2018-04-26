@@ -12,7 +12,7 @@ setClassUnion("ListOrNULL", c("list", "NULL"))
 #' @slot batchs List Batch S4 objects. (Default NULL)
 #' @slot logdir Character Path to the folder that will contains logs file. (By default in folder)
 #' @slot clean Logical Whether or not the working directory folder should be removed. (Default TRUE)
-#' @slot tmpdir Character If use through RSConnect then you must define a tmpdir not in /tmp/*. (Default TRUE)
+#' @slot tmpdir Character If use through RSConnect you can redefine a tmpdir not in /tmp/*. (Default NULL)
 #' @aliases queue-class
 #' @rdname classQueue
 #' @exportClass queue
@@ -119,7 +119,7 @@ setMethod(f = "addBatch", signature = "queue", definition = function(object, pat
 
     # Get name, if name null, then set file name without extension
     if (is.null(name)) name <- tools::file_path_sans_ext(basename(path))
-    if (!is.character(name) | nchar(name) > 30) stop("If name is specified then must be a character with length < 30")
+    if (!is.character(name) | nchar(name) > 40) stop("If name is specified then must be a character with length < 40")
 
     # Get logfile
     if (is.null(logfile)) {

@@ -7,7 +7,7 @@
 #' @param folder Character Path to a folder that will contains the working directory folder. (Default tempdir())
 #' @param logdir Character Path to the folder that will contains logs file. (By default in folder)
 #' @param clean Logical Whether or not the working directory folder should be removed. (Default TRUE)
-#' @param tmpdir Character If use through RSConnect then you must define a tmpdir not in /tmp/*. (Default TRUE)
+#' @param tmpdir Character If use through RSConnect you can redefine a tmpdir not in /tmp/*. (Default NULL)
 #' @export
 #' @examples
 #' \dontrun{

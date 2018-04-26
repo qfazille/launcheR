@@ -90,32 +90,9 @@ runRenviron <- function() {
     }
 }
 
-# Add TMP in Renviron if needed
-setTMP <- function(folder) {
-    return(paste0("echo TMP='", folder, "' >> .Renviron", linebreak()))
-}
-
-setTEMP <- function(folder) {
-    return(paste0("echo TEMP='", folder, "' >> .Renviron", linebreak()))
-}
-
+# Add TMPDIR in Renviron if needed
 setTMPDIR <- function(folder) {
     return(paste0("echo TMPDIR='", folder, "' >> .Renviron", linebreak()))
-}
-
-# used only for debug
-{
-    exportTEMP <- function(folder) {
-        return(paste0("export TEMP=", folder, linebreak()))
-    }
-    
-    exportTMPDIR <- function(folder) {
-        return(paste0("export TMPDIR=", folder, linebreak()))
-    }
-    
-    exportTMP <- function(folder) {
-        return(paste0("export TMP=", folder, linebreak()))
-    }
 }
 
 # sleep
@@ -275,22 +252,4 @@ getEndIf <- function() {
     } else if (sysname() == "Unix") {
         return("fi")
     }
-}
-
-echo <- function() {
-    return("echo")
-}
-
-internalFile <- "internal.R"
-
-redirectInternal <- function() {
-    return(paste(">", internalFile))
-}
-
-createInternal <- function(cmd) {
-    return(paste(echo(), cmd, redirectInternal()))
-}
-
-runInternalFunction <- function() {
-    return(paste(rscriptOptions(), internalFile, linebreak()))
 }
