@@ -22,11 +22,7 @@ runInit <- function(object) {
     }
     
     # Write in runFile
-    if (is.null(object@group)) {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", owner=\"", object@owner, "\")' ", linebreak())
-    } else {
-        cmd <- paste0("'launcheR:::waitQueue(queue_name=\"", object@name, "\", group=\"", object@group, "\", owner=\"", object@owner, "\")' ", linebreak())
-    }
+    cmd <- paste0("'launcheR:::waitQueue()' ", linebreak())
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
     
@@ -36,80 +32,50 @@ runInit <- function(object) {
     return(runFile)
 }
 
-runBatch <- function(batch, runFile, nbBatchs) {
-        
+runBatch <- function(batch, runFile) {
         # Get info from batch object
-        params <- batch@params
         Rank   <- batch@Rank
+        params <- batch@params
+        if (is.null(params)) exist_params <- FALSE else exist_params <- TRUE
         
         # Get folder
         folder <- dirname(runFile)
-        
-        # Params
-        if (is.null(params)) exist_params <- FALSE else exist_params <- TRUE
-        
-        # If params add 'launcheR:::setRData'
+
+        cmd_waitBatch <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::waitBatch(Rank=\"", batch@Rank, "\")' ;", linebreak()))
+
         if (exist_params) {
-            # Create RData file if params
-            env <- new.env()
-            sapply(names(params), function(x) { assign(x = x, value = params[[x]], envir = env)})
-            RData_file <- file.path(folder, paste0("params", Rank, ".RData"))
-            save(list = ls(envir = env), envir = env, file = RData_file)
-            # Add line setRdata
-            runSetRData(runFile = runFile, file_ = RData_file)
+            cmd_setRData <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::setRData(Rank=\"", batch@Rank, "\")' ;", linebreak()))
+        } else {
+            cmd_setRData <- NULL
         }
-        # add line 'launcheR:::waitBatch' + Rscript batch
-        runWaitBatch(batch = batch, runFile = runFile, params = exist_params, nbBatchs = nbBatchs)
+
+        # Add /path/to/batch.R >> batch.log
+        run  <- paste(rscriptOptions(restore = exist_params), batch@path, redirect_log(), batch@logfile, errorRedir(), ";", linebreak())
+
+        # release batch : status
+        release_OK    <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=\"", batch@Rank, "\", status=\"OK\")' "))
+        release_KO <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=\"", batch@Rank, "\", status=\"KO\")' "))
+        cmd_releaseBatch  <- setErrorIfElse(release_OK, release_KO)
+
+        cmd_all <- paste0(cmd_setRData, run, cmd_releaseBatch)
+        cmd_all_in_if <- setErrorIfElse(cmd_all)
+
+        cmd_all_batch <- paste("(", cmd_waitBatch, cmd_all_in_if, ") &", linebreak(), sep = "")
+        cat(cmd_all_batch, file = runFile, append = TRUE)
 }
 
-runWaitBatch <- function(batch, runFile, params = FALSE, nbBatchs) {
-    # check inputs
-    stopifnot(!any(unlist(lapply(list(batch, runFile, params), is.null))))
-    
-    # Add 'launcheR:::waitBatch'
-    cmd <- paste0("'launcheR:::waitBatch(batch_name=\"", batch@name, "\", batch_par=\"", batch@parallelizable, "\", batch_rank=\"", batch@Rank, "\", batch_path=\"", batch@path, "\")' ", linebreak())
-    line_ <- paste(rscriptOptions(execute = TRUE), cmd)
-    cat(line_, file = runFile, append = TRUE)
-    
-    # Add 'Rscript /path/batch' & 'launcheR:::releaseBatch' in the same line + & if waitBeforeNext = FALSE
-    cmd1  <- paste(rscriptOptions(restore = params), batch@path, redirect_log(), batch@logfile, errorRedir())
-    cmd2a <- paste(getIfStatus())
-    cmd2b <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"OK\")' "))
-    cmd2c <- paste(getElse())
-    cmd2d <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(batch_rank=\"", batch@Rank, "\", status=\"KO\")' "))
-    cmd2e <- paste(getEndIf())
-    cmd2  <- paste(cmd2a, cmd2b, cmd2c, cmd2d, cmd2e, sep = linebreak())
-    line_ <- gatherCmd(cmd1, cmd2, background = !batch@waitBeforeNext)
-    cat(line_, file = runFile, append = TRUE)
-    
-    # Add sleep, not to fire batch at the exact same second (for visualization)
-    if (!batch@waitBeforeNext & batch@Rank != nbBatchs) {
-        cmd <- getSleep()
-        cat(cmd, file = runFile, append = TRUE)
-    }
-    
-    # If not background add wait (only if != nbBatch because the releaseQueue has already a wait before)
-    if (batch@waitBeforeNext & batch@Rank != nbBatchs) {
-        cmd <- getWait()
-        cat(cmd, file = runFile, append = TRUE)
-    }
-}
-
-# Add launcheR:::setRData
-runSetRData <- function(runFile, file_) {
-    stopifnot(!any(unlist(lapply(list(runFile, file_), is.null))))
-    cmd <- paste0("'launcheR:::setRData(file=\"", file_, "\")' ", linebreak())
-    line_ <- paste(rscriptOptions(execute = TRUE), cmd)
-    cat(line_, file = runFile, append = TRUE)
+createRDataFile <- function(batch, folder) {
+    env <- new.env()
+    sapply(names(batch@params), function(x) { assign(x = x, value = batch@params[[x]], envir = env)})
+    RData_file <- file.path(folder, paste0("params", batch@Rank, ".RData"))
+    save(list = ls(envir = env), envir = env, file = RData_file)
 }
 
 # Add launcheR:::release
 runReleaseQueue <- function(runFile = NULL) {
     stopifnot(!is.null(runFile))
-    wait_line <- getWait() # This line in case user set waitBeforeNext = FALSE at the last batch of queue.
-    cmd <- paste0("'launcheR:::releaseQueue()' ", linebreak())
-    cmd_line <- paste(rscriptOptions(execute = TRUE), cmd)
-    cat(wait_line, cmd_line, file = runFile, append = TRUE, sep = "")
+    cmd_line <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseQueue()' ", linebreak()))
+    cat(cmd_line, file = runFile, append = TRUE, sep = "")
 }
 
 # Add remove temp folder
@@ -124,4 +90,15 @@ cleanFolder <- function(folder = NULL, runFile = NULL) {
         }
         cat(cmd, file = runFile, append = TRUE)
     }
+}
+
+# This function create a meta.RData that contains the queue without all parameters
+createMeta <- function(object) {
+    object@batchs <- sapply(object@batchs, function(x) {x@params <- NULL;x})
+    RDS_file <- file.path(object@folder, paste0("meta.RDS"))
+    saveRDS(object, file = RDS_file)
+}
+
+loadMeta <- function() {
+    return(readRDS("./meta.RDS"))
 }

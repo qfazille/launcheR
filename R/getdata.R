@@ -12,7 +12,8 @@ get_emptyTable <- function(table_name) {
     if (table_name == "WaitQueue") {
         return(data.frame(queueid = numeric()
                     , group = character()
-                    , name = character()
+                    , queuename = character()
+                    , desc = character()
                     , owner = character()
                     , wait = numeric()
                     , startDate = character()
@@ -23,19 +24,22 @@ get_emptyTable <- function(table_name) {
                     , queueid = numeric()
                     , group = character()
                     , path = character()
-                    , name = character()
+                    , batchname = character()
+                    , queuename = character()
+                    , desc = character()
                     , parallelizable = logical()
+                    , waitBeforeNext = logical()
+                    , endIfKO = logical()
                     , wait = numeric()
                     , progress = numeric()
-                    , status = character()
                     , startDate = character()
                     , realStartDate = character()
-                    , endDate = character()
                     , stringsAsFactors = FALSE))
     } else if (table_name == "HistorizedQueue") {
         return(data.frame(queueid = numeric()
                     , group = character()
                     , queuename = character()
+                    , desc = character()
                     , owner = character()
                     , startDate = character()
                     , realStartDate = character()
@@ -48,6 +52,7 @@ get_emptyTable <- function(table_name) {
                     , path = character()
                     , queuename = character()
                     , batchname = character()
+                    , desc = character()
                     , status = character()
                     , startDate = character()
                     , realStartDate = character()
@@ -72,6 +77,34 @@ createDB <- function(datafilepath) {
     dbWriteTable(mydb, "HistorizedQueue",   get_emptyTable("HistorizedQueue"))
     dbWriteTable(mydb, "HistorizedBatch",   get_emptyTable("HistorizedBatch"))
     dbDisconnect(mydb)
+}
+
+resetDB <- function() {
+    datafilepath <- datafilepath()
+    if (!file.exists(datafilepath)) {
+        # If file doesn't exist, create database
+        createDB(datafilepath = datafilepath)
+        message("launcheR database created")
+    } else {
+        # if file exists, check if structure of tables are good
+        db_to_create <- FALSE
+        if (length(setdiff(colnames(getWaitBatch()), colnames(get_emptyTable("WaitBatch")))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(get_emptyTable("WaitBatch")), colnames(getWaitBatch()))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(getWaitQueue()), colnames(get_emptyTable("WaitQueue")))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(get_emptyTable("WaitQueue")), colnames(getWaitQueue()))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(getHistorizedBatch()), colnames(get_emptyTable("HistorizedBatch")))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(get_emptyTable("HistorizedBatch")), colnames(getHistorizedBatch()))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(getHistorizedQueue()), colnames(get_emptyTable("HistorizedQueue")))) > 0) db_to_create <- TRUE
+        if (length(setdiff(colnames(get_emptyTable("HistorizedQueue")), colnames(getHistorizedQueue()))) > 0) db_to_create <- TRUE
+        if (db_to_create) {
+            createDB(datafilepath = datafilepath)
+            message("launcheR database updated")
+        }
+    }
+}
+
+.onLoad <- function(libname, pkgname) {
+    resetDB()
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
@@ -99,45 +132,31 @@ writeWaitBatch <- function(df) {
     dbDisconnect(mydb)
 }
 
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-writeHistorizedBatch <- function(df) {
-    df <- factors2char(df)
-    stopifnot(all(sapply(df, class) == sapply(getHistorizedBatch(), class)))
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedBatch", df, overwrite = TRUE)
-    dbDisconnect(mydb)
-}
-
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-writeHistorizedQueue <- function(df) {
-    df <- factors2char(df)
-    stopifnot(all(sapply(df, class) == sapply(getHistorizedQueue(), class)))
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedQueue", df, overwrite = TRUE)
-    dbDisconnect(mydb)
-}
-
 #' @importFrom DBI dbConnect dbSendStatement dbBind dbClearResult dbDisconnect
 launchWaitBatch <- function(id) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    rs <- dbSendStatement(mydb, 'UPDATE WaitBatch SET wait = 0, realStartDate = :gd WHERE batchid = :bid')
-    dbBind(rs, params = list(gd = getDate(), bid = id))
-    dbClearResult(rs)
-    dbDisconnect(mydb)
+    # Update wait & realStartDate
+    df <- getWaitBatch()
+    df[which(df$batchid %in% id), "realStartDate"] <- getDate()
+    df[which(df$batchid %in% id), "wait"] <- 0
+    # Remove duplicates (one row per id to wait)
+    df <- unique(df)
+    writeWaitBatch(df)
 }
 
 #' @importFrom DBI dbConnect dbSendStatement dbBind dbClearResult dbDisconnect
 launchWaitQueue <- function(id) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    rs <- dbSendStatement(mydb, 'UPDATE WaitQueue SET wait = 0, realStartDate = :gd WHERE queueid = :qid')
-    dbBind(rs, params = list(gd = getDate(), qid = id))
-    dbClearResult(rs)
-    dbDisconnect(mydb)
+    # Update wait & realStartDate
+    df <- getWaitQueue()
+    df[which(df$queueid %in% id), "realStartDate"] <- getDate()
+    df[which(df$queueid %in% id), "wait"] <- 0
+    # Remove duplicates (one row per id to wait)
+    df <- unique(df)
+    writeWaitQueue(df)
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addWaitBatch <- function(batchid, queueid, group = NULL, path, name, parallelizable, wait = 0, progress = 0, status = as.character(NA), startDate = as.character(NA), realStartDate = as.character(NA), endDate = as.character(NA)) {
-    stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress), is.null))))
+addWaitBatch <- function(batchid, queueid, group = NULL, path, batchname, queuename, desc = "", parallelizable, waitBeforeNext, endIfKO, wait = 0, progress = 0, startDate = as.character(NA)) {
+    stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress, waitBeforeNext, endIfKO), is.null))))
     stopifnot(class(parallelizable) == "logical")
     if (is.null(group)) group <- as.character(NA) # Need to keep this line because when group is explicitly called with NULL then I get arguments imply differing number of rows: 1, 0
     toInsert <- data.frame(batchid = batchid
@@ -145,71 +164,110 @@ addWaitBatch <- function(batchid, queueid, group = NULL, path, name, paralleliza
                     , group = group
                     , path = path
                     , name = name
+                    , desc = desc
                     , parallelizable = parallelizable
+                    , waitBeforeNext = waitBeforeNext
+                    , endIfKO = endIfKO
                     , wait = wait
                     , progress = progress
                     , startDate = startDate
-                    , realStartDate = realStartDate
-                    , endDate = endDate
+                    , realStartDate = as.character(NA)
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "logical", "numeric", "numeric", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character", "character")))
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     dbWriteTable(mydb, "WaitBatch", toInsert, append = TRUE)
     dbDisconnect(mydb)
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addWaitQueue <- function(queueid, group = NULL, name, owner, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
+addWaitQueue <- function(queueid, group = NULL, queuename, desc = "", owner, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
     stopifnot(!any(unlist(lapply(list(queueid, name), is.null))))
     if (is.null(group)) group <- as.character(NA) # Need to keep this line (same as in addWaitBatch function)
     toInsert <- data.frame(queueid = queueid
                     , group = group
-                    , name = name
+                    , queuename = queuename
+                    , desc = desc
                     , owner = owner
                     , wait = wait
                     , startDate = startDate
                     , realStartDate = realStartDate
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "numeric", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "character", "numeric", "character", "character")))
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     dbWriteTable(mydb, "WaitQueue", toInsert, append = TRUE)
     dbDisconnect(mydb)
 }
 
+removeWaitQueue <- function(queueid) {
+    df <- getWaitQueue()
+    if (any(queueid %in% df$queueid)) {
+        df <- df[which(!df$queueid %in% queueid), ]
+        writeWaitQueue(df)
+    }
+}
+
+removeWaitBatch <- function(batchid) {
+    df <- getWaitBatch()
+    if (any(batchid %in% df$batchid) {
+        df <- df[which(!df$batchid %in% batchid), ]
+        writeWaitBatch(df)
+    }
+}
+
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addHistorizedBatch <- function(queueid, batchid, group, path, queuename, batchname, status, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, batchid, path, queuename, batchname, status, startDate, realStartDate, endDate), is.null))))
-    toInsert <- data.frame(queueid = queueid
-                    , batchid = batchid
-                    , group = as.character(group)
-                    , path = path
-                    , queuename = queuename
-                    , batchname = batchname
-                    , status = status
-                    , startDate = startDate
-                    , realStartDate = realStartDate
-                    , endDate = endDate
-                    , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "character", "character", "character")))
+historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
+    df <- getWaitQueue()
+    # keep order in queueid (param)
+    df <- df[match(queueid, df$queueid), c("queueid", "group", "queuename", "desc", "owner", "startDate", "realStartDate")]
+    
+    # Check on endDate
+    if (length(endDate) > 1) {
+        stopifnot(nrow(df) == length(endDate))
+    }
+    
+    # Check on status
+    if (length(status) > 1) {
+        stopifnot(nrow(df) == length(status))
+    }
+    
+    # Add endDate & status
+    df$status  <- status
+    df$endDate <- endDate
+    
+    # Remove from waitQueue
+    removeWaitQueue(queueid = queueid)
+    
+    # Add in historizedQueue
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedBatch", toInsert, append = TRUE)
+    dbWriteTable(mydb, "HistorizedQueue", df, append = TRUE)
     dbDisconnect(mydb)
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addHistorizedQueue <- function(queueid, group, queuename, owner, startDate, realStartDate, endDate = getDate()) {
-    stopifnot(!any(unlist(lapply(list(queueid, queuename, startDate, realStartDate, endDate), is.null))))
-    toInsert <- data.frame(queueid = queueid
-                    , group = as.character(group)
-                    , queuename = queuename
-                    , owner = owner
-                    , startDate = startDate
-                    , realStartDate = realStartDate
-                    , endDate = endDate
-                    , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "character", "character", "character")))
+# No need to set status & endDate here, it will be done in releaseBatch
+historizedBatch <- function(batchid, status, endDate = getDate()) {
+    df <- getWaitBatch()
+    # keep order in batchid (param)
+    df <- df[match(batchid, df$batchid), c("batchid", "queueid", "group", "path", "queuename", "batchname", "desc", "startDate", "realStartDate")]
+    
+    # Check on endDate
+    if (length(endDate) > 1) {
+        stopifnot(nrow(df) == length(endDate))
+    }
+    
+    # Check on status
+    if (length(status) > 1) {
+        stopifnot(nrow(df) == length(status))
+    }
+    
+    # Add endDate & status
+    df$status  <- status
+    df$endDate <- endDate
+    
+    removeWaitBatch(batchid = batchid)
+    
+    # Add in historizedBatch
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedQueue", toInsert, append = TRUE)
+    dbWriteTable(mydb, "HistorizedBatch", df, append = TRUE)
     dbDisconnect(mydb)
 }
-

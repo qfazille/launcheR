@@ -6,6 +6,7 @@ setClassUnion("ListOrNULL", c("list", "NULL"))
 #' @title The queue class
 #' @description This class is used to store follwing slot
 #' @slot name Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))
+#' @slot desc Character Description. (Optional)
 #' @slot group Character Name of the group the queue belongs to. (Default NULL)
 #' @slot owner Character username of launcher. (Default Sys.info()["user"])
 #' @slot folder Character Path to a folder that will contains the working directory folder. (Default tempdir())
@@ -21,6 +22,7 @@ setClass(
     Class = "queue",
     slots = c(
         name = "character",
+        desc = "CharacterOrNULL",
         group = "CharacterOrNULL",
         owner = "character",
         folder = "character",
@@ -34,7 +36,7 @@ setClass(
 #' @importFrom methods validObject
 setMethod(f = "initialize"
         , signature = "queue"
-        , definition = function(.Object, name = NULL, group = NULL, owner = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
+        , definition = function(.Object, name = NULL, desc = NULL, group = NULL, owner = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
         {
             # valid name
             .Object@name <- validName(name)
@@ -44,6 +46,7 @@ setMethod(f = "initialize"
             if (nchar(owner) > 20)  owner <- substr(owner, 1, 20)
 
             # Don't need to validate group, clean, batchs
+            .Object@desc      <- desc
             .Object@group     <- group
             .Object@clean     <- clean
             .Object@batchs    <- list()
@@ -94,6 +97,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' @description Add batch to a queue
 #' @param path Character Path to the R batch. (Mandatory)
 #' @param name Character Alias of the batch. (Default basename(batch@path))
+#' @param desc Character Description
 #' @param params Named list that contains the variable to be transfered to batch. (Default NULL)
 #' @param parallelizable Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)
 #' @param waitBeforeNext Logical If queue can launch next batch while this one. (Default TRUE)
@@ -108,7 +112,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' }
 #' @author Quentin Fazilleau
 #' @importFrom methods new
-setMethod(f = "addBatch", signature = "queue", definition = function(object, path = NULL, name = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, logfile = NULL) {
+setMethod(f = "addBatch", signature = "queue", definition = function(object, path = NULL, name = NULL, desc = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, endIfKO = TRUE, logfile = NULL) {
     # Get Rank
     Rank <- length(object@batchs) + 1
 
@@ -134,7 +138,7 @@ setMethod(f = "addBatch", signature = "queue", definition = function(object, pat
     }
 
     # Create batch
-    batch <- new(Class = "batch", name = name, path = path, params = params, parallelizable = parallelizable, waitBeforeNext = waitBeforeNext, logfile = logfile, Rank = Rank)
+    batch <- new(Class = "batch", name = name, desc = desc, path = path, params = params, parallelizable = parallelizable, waitBeforeNext = waitBeforeNext, endIfKO = endIfKO, logfile = logfile, Rank = Rank)
 
     # Add batch to queue
     object@batchs[[Rank]] <- batch
@@ -174,19 +178,26 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     # if logdir doesn't exist create it
     if (!file.exists(object@logdir)) dir.create(object@logdir)
 
-    # Initialize run.[sh|bat] with first line waitQueue
+    # Create meta.RData containing the queue
+    createMeta(object = object)
+
+    # Initialize run.sh with first line waitQueue
     runFile <- runInit(object = object)
 
     # Loop on batch
     #   - Create RData file
-    #   - Add in run.[sh|bat] the lines
+    #   - Add in run.sh the lines
     for (i in 1:length(object@batchs)) {
-        # This method does :
-        #   - if params :
-        #       - creates RData
-        #       - add lines in run.sh of setRdata
-        #   - add line waitBatch in run.sh
-        runBatch(batch = object@batchs[[i]], runFile = runFile, nbBatchs = length(object@batchs))
+        # Create .RData for parameters if needed
+        if (!is.null(object@batchs[[i]]@params)) createRDataFile(batch = object@batchs[[i]], folder = object@folder)
+        # Add in runFile the whole part linked to the batch (waitBatch + setRData + run + releaseBatch)
+        runBatch(batch = object@batchs[[i]], runFile = runFile)
+        # Add sleep 2 or wait
+        if (i == length(object@batchs)) {
+            cat("wait", file = runFile, append = TRUE, sep = linebreak())
+        } else {
+            cat("sleep 2", file = runFile, append = TRUE, sep = linebreak())
+        }
     }
 
     # Add releaseQueue
@@ -200,8 +211,19 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     # Launch file in background
     logFile <- file.path(object@folder, "run.log")
     cmd <- launchFile(runFile = runFile, logFile = logFile)
-    system(cmd)
+    #system(cmd)
+    print(cmd)
+    # Wait 1sec just the time database is updated
+    #Sys.sleep(1)
 })
+
+# Get a batch from its Rank
+setGeneric(name="batchFromRank",def=function(object, Rank)   {standardGeneric("batchFromRank")})
+setMethod(f = "batchFromRank", signature = "queue", definition = function(object) {
+    res <- sapply(object@batchs, function(x) {if (x@Rank == Rank) x})
+    res[[1]]
+})
+
 
 # for dev purposes
 setGeneric(name="cleanQ",def=function(object)   {standardGeneric("cleanQ")})

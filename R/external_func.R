@@ -14,8 +14,8 @@
 #' q <- createQueue()
 #' }
 #' @importFrom methods new
-createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), group = NULL, owner = Sys.info()["user"], folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) {
-    new(Class = "queue", name = name, group = group, owner = owner, folder = folder, logdir = logdir, clean = clean, tmpdir = tmpdir)
+createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), desc = NULL, group = NULL, owner = Sys.info()["user"], folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) {
+    new(Class = "queue", name = name, desc = desc, group = group, owner = owner, folder = folder, logdir = logdir, clean = clean, tmpdir = tmpdir)
 }
 
 
@@ -98,7 +98,6 @@ getWaitQueue <- function(reset = FALSE) {
 #' @rdname getWaitBatch
 #' @title getWaitBatch
 #' @description Get the waiting queue
-#' @param with.done Logical If true show also ended batchs. (Default TRUE)
 #' @param reset Logical If true then reset table. (Default FALSE)
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
 #' @importFrom RSQLite SQLite
@@ -107,7 +106,7 @@ getWaitQueue <- function(reset = FALSE) {
 #' \dontrun{
 #' getWaitBatch()
 #' }
-getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
+getWaitBatch <- function(reset = FALSE) {
     checkDBExistance()
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     if (reset) {
@@ -115,7 +114,6 @@ getWaitBatch <- function(with.done = TRUE, reset = FALSE) {
         df <- get_emptyTable("WaitBatch")
     } else {
         df <- dbReadTable(conn = mydb, name = "WaitBatch")
-        if (!with.done) df <- df[which(df$wait >= 0),] # Because when batch end wait == -1
     }
     dbDisconnect(mydb)
     return(df)

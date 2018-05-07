@@ -131,17 +131,6 @@ redirect_log <- function() {
     }
 }
 
-# Gather several lines into one
-gatherCmd <- function(..., background = FALSE) {
-    if (sysname() == "Windows") {
-        return(NULL)
-    } else if (sysname() == "Unix") {
-        line_ <- paste0("(", paste(..., sep = " ; \\\n"), ")") 
-        if (background) line_ <- paste(line_, "&", linebreak()) else line_ <- paste(line_, linebreak())
-        return(line_)
-    }
-}
-
 # Set cmd to pass to system function
 launchFile <- function(runFile = NULL, logFile = NULL) {
     stopifnot(!is.null(runFile))
@@ -252,4 +241,17 @@ getEndIf <- function() {
     } else if (sysname() == "Unix") {
         return("fi")
     }
+}
+
+
+setErrorIfElse <- function(if_true, if_false = NULL) {
+    if (is.null(if_false)) {
+        paste(getIfStatus(), addTab(if_true), getEndIf(), sep = linebreak())
+    } else {
+        paste(getIfStatus(), addTab(if_true), getElse(), addTab(if_false), getEndIf(), sep = linebreak())
+    }
+}
+
+addTab <- function(cmd) {
+    paste0("    ", gsub(pattern = linebreak(), replacement = paste0(linebreak(), "    "), x = cmd))
 }
