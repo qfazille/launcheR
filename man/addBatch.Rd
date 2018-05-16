@@ -9,9 +9,9 @@
 \usage{
 addBatch(object, ...)
 
-\S4method{addBatch}{queue}(object, path = NULL, name = NULL,
+\S4method{addBatch}{queue}(object, path = NULL, name = NULL, desc = NULL,
   params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE,
-  logfile = NULL)
+  endIfKO = TRUE, logfile = NULL)
 }
 \arguments{
 \item{object}{An object of class queue}
@@ -22,11 +22,15 @@ addBatch(object, ...)
 
 \item{name}{Character Alias of the batch. (Default basename(batch@path))}
 
+\item{desc}{Character Description}
+
 \item{params}{Named list that contains the variable to be transfered to batch. (Default NULL)}
 
 \item{parallelizable}{Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)}
 
 \item{waitBeforeNext}{Logical If queue can launch next batch while this one. (Default TRUE)}
+
+\item{endIfKO}{Logical If batch ends KO, forcefully terminate queue. (Default TRUE)}
 
 \item{logfile}{Character Path to file that contains batch output. (Default queue@logfolder/batch@name.log)}
 }

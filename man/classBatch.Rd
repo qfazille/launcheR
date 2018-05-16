@@ -13,6 +13,8 @@ This class is used to store follwing slot
 \describe{
 \item{\code{name}}{Character Contains alias of the batch. (Default basename(batch@path))}
 
+\item{\code{desc}}{Character Description. (Optional)}
+
 \item{\code{path}}{Character Contains the path to the R batch. (Mandatory)}
 
 \item{\code{params}}{Named list Contains the variable to be transfered to batch. (Default NULL)}
@@ -20,6 +22,8 @@ This class is used to store follwing slot
 \item{\code{parallelizable}}{Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)}
 
 \item{\code{waitBeforeNext}}{Logical If queue can launch next batch while this one. (Default TRUE)}
+
+\item{\code{endIfKO}}{Logical If batch ends KO, forcefully terminate queue. (Default TRUE)}
 
 \item{\code{logfile}}{Character Contains path to file that contains batch output. (Default queue@logfolder/batch@name.log)}
 

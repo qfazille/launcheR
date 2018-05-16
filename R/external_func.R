@@ -2,6 +2,7 @@
 #' @title createQueue
 #' @description Create an empty queue.
 #' @param name Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))
+#' @param desc Character Description
 #' @param group Character Name of the group the queue belongs to. (Default NULL)
 #' @param owner Character username of launcher. (Default Sys.info()["user"])
 #' @param folder Character Path to a folder that will contains the working directory folder. (Default tempdir())
@@ -19,18 +20,18 @@ createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")
 }
 
 
-#' @rdname reset
-#' @title reset
-#' @description Reset all waiting queue/batchs information.\cr
+#' @rdname launcheR.reset
+#' @title launcheR.reset
+#' @description launcheR.reset reset all waiting queue/batchs information.\cr
 #'     This function should be use in case a batch or queue is stuck in the progress batchs.\cr
 #'     That can happen when a process has been killed forcefully.
 #' @param historized Logical If historized queue/batchs must be also reset.
 #' @export
 #' @examples
 #' \dontrun{
-#' reset()
+#' launcheR.reset()
 #' }
-reset <- function(historized = FALSE) {
+launcheR.reset <- function(historized = FALSE) {
     getWaitQueue(reset = TRUE)
     getWaitBatch(reset = TRUE)
     if (historized) {
@@ -108,7 +109,7 @@ getWaitQueue <- function(reset = FALSE) {
 #' }
 getWaitBatch <- function(reset = FALSE) {
     checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- DBI::dbConnect(RSQLite::SQLite(), datafilepath())
     if (reset) {
         emptyTable("WaitBatch")
         df <- get_emptyTable("WaitBatch")

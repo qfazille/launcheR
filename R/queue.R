@@ -22,8 +22,8 @@ setClass(
     Class = "queue",
     slots = c(
         name = "character",
-        desc = "CharacterOrNULL",
-        group = "CharacterOrNULL",
+        desc = "character",
+        group = "character",
         owner = "character",
         folder = "character",
         batchs = "ListOrNULL",
@@ -44,7 +44,11 @@ setMethod(f = "initialize"
             # valid owner
             if (is.null(owner))     owner <- ""
             if (nchar(owner) > 20)  owner <- substr(owner, 1, 20)
-
+            
+            # Set NULL not mandatory parameters to as.character(NA)
+            if (is.null(desc))  desc <- as.character(NA)
+            if (is.null(group)) group <- as.character(NA)
+            
             # Don't need to validate group, clean, batchs
             .Object@desc      <- desc
             .Object@group     <- group
@@ -101,6 +105,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' @param params Named list that contains the variable to be transfered to batch. (Default NULL)
 #' @param parallelizable Logical If batch can be launched multiple times at the same moment regardless to groups. (Default TRUE)
 #' @param waitBeforeNext Logical If queue can launch next batch while this one. (Default TRUE)
+#' @param endIfKO Logical If batch ends KO, forcefully terminate queue. (Default TRUE)
 #' @param logfile Character Path to file that contains batch output. (Default queue@logfolder/batch@name.log)
 #' @rdname addBatch
 #' @exportMethod addBatch
@@ -217,9 +222,23 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     #Sys.sleep(1)
 })
 
-# Get a batch from its Rank
-setGeneric(name="batchFromRank",def=function(object, Rank)   {standardGeneric("batchFromRank")})
-setMethod(f = "batchFromRank", signature = "queue", definition = function(object) {
+#' @aliases batchFromRank
+#' @description Get a batch from its Rank
+#' @param object An object of class queue
+#' @param Rank Character Rank of batch to get its ID
+#' @rdname batchFromRank
+#' @export
+setGeneric(name="batchFromRank",def=function(object, Rank)   {
+    standardGeneric("batchFromRank")
+})
+
+#' @name batchFromRank
+#' @aliases batchFromRank,queue-method
+#' @title batchFromRank
+#' @description Get a batch from its Rank
+#' @rdname batchFromRank
+#' @exportMethod batchFromRank
+setMethod(f = "batchFromRank", signature = "queue", definition = function(object, Rank) {
     res <- sapply(object@batchs, function(x) {if (x@Rank == Rank) x})
     res[[1]]
 })

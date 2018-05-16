@@ -1,4 +1,5 @@
 setClassUnion("ListOrNULL", c("list", "NULL"))
+setClassUnion("CharacterOrNULL", c("character", "NULL"))
 
 ### Class
 #' The batch class
@@ -51,6 +52,9 @@ setMethod(f = "initialize"
         if (is.null(Rank)) stop("Rank cannot be null")
         if (is.null(logfile)) stop("logfile cannot be null")
         if (is.null(name)) stop("name should be set before")
+        
+        # Set NULL not mandatory parameters to as.character(NA)
+        if (is.null(desc)) desc <- as.character(NA)
         
         .Object@name            <- name
         .Object@desc            <- desc

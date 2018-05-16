@@ -5,11 +5,13 @@
 \title{createQueue}
 \usage{
 createQueue(name = basename(tempfile(pattern = "queue", tmpdir = "")),
-  group = NULL, owner = Sys.info()["user"], folder = NULL,
+  desc = NULL, group = NULL, owner = Sys.info()["user"], folder = NULL,
   logdir = NULL, clean = TRUE, tmpdir = NULL)
 }
 \arguments{
 \item{name}{Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))}
+
+\item{desc}{Character Description}
 
 \item{group}{Character Name of the group the queue belongs to. (Default NULL)}
 

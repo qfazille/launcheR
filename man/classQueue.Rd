@@ -13,6 +13,8 @@ This class is used to store follwing slot
 \describe{
 \item{\code{name}}{Character Alias name of the queue. (Default basename(tempfile(pattern = "file", tmpdir = "")))}
 
+\item{\code{desc}}{Character Description. (Optional)}
+
 \item{\code{group}}{Character Name of the group the queue belongs to. (Default NULL)}
 
 \item{\code{owner}}{Character username of launcher. (Default Sys.info()["user"])}

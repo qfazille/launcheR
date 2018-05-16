@@ -72,10 +72,10 @@ createDB <- function(datafilepath) {
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath)
     # Manually set the permissions to all
     Sys.chmod(datafilepath, "777", use_umask = FALSE)
-    dbWriteTable(mydb, "WaitQueue",         get_emptyTable("WaitQueue"))
-    dbWriteTable(mydb, "WaitBatch",         get_emptyTable("WaitBatch"))
-    dbWriteTable(mydb, "HistorizedQueue",   get_emptyTable("HistorizedQueue"))
-    dbWriteTable(mydb, "HistorizedBatch",   get_emptyTable("HistorizedBatch"))
+    dbWriteTable(mydb, "WaitQueue",         get_emptyTable("WaitQueue"), overwrite = TRUE)
+    dbWriteTable(mydb, "WaitBatch",         get_emptyTable("WaitBatch"), overwrite = TRUE)
+    dbWriteTable(mydb, "HistorizedQueue",   get_emptyTable("HistorizedQueue"), overwrite = TRUE)
+    dbWriteTable(mydb, "HistorizedBatch",   get_emptyTable("HistorizedBatch"), overwrite = TRUE)
     dbDisconnect(mydb)
 }
 
@@ -155,15 +155,13 @@ launchWaitQueue <- function(id) {
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addWaitBatch <- function(batchid, queueid, group = NULL, path, batchname, queuename, desc = "", parallelizable, waitBeforeNext, endIfKO, wait = 0, progress = 0, startDate = as.character(NA)) {
-    stopifnot(!any(unlist(lapply(list(batchid, queueid, name, parallelizable, wait, progress, waitBeforeNext, endIfKO), is.null))))
-    stopifnot(class(parallelizable) == "logical")
-    if (is.null(group)) group <- as.character(NA) # Need to keep this line because when group is explicitly called with NULL then I get arguments imply differing number of rows: 1, 0
+addWaitBatch <- function(batchid, queueid, group = as.character(NA), path, batchname, queuename, desc = as.character(NA), parallelizable, waitBeforeNext, endIfKO, wait = 0, progress = 0, startDate = as.character(NA)) {
+    stopifnot(!any(unlist(lapply(list(batchid, queueid, batchname, parallelizable, wait, progress, waitBeforeNext, endIfKO), is.null))))
     toInsert <- data.frame(batchid = batchid
                     , queueid = queueid
                     , group = group
                     , path = path
-                    , name = name
+                    , batchname = batchname
                     , desc = desc
                     , parallelizable = parallelizable
                     , waitBeforeNext = waitBeforeNext
@@ -173,16 +171,15 @@ addWaitBatch <- function(batchid, queueid, group = NULL, path, batchname, queuen
                     , startDate = startDate
                     , realStartDate = as.character(NA)
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character")))
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     dbWriteTable(mydb, "WaitBatch", toInsert, append = TRUE)
     dbDisconnect(mydb)
 }
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
-addWaitQueue <- function(queueid, group = NULL, queuename, desc = "", owner, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
-    stopifnot(!any(unlist(lapply(list(queueid, name), is.null))))
-    if (is.null(group)) group <- as.character(NA) # Need to keep this line (same as in addWaitBatch function)
+addWaitQueue <- function(queueid, group = as.character(NA), queuename, desc = as.character(NA), owner, wait = 0, startDate = as.character(NA), realStartDate = as.character(NA)) {
+    stopifnot(!any(unlist(lapply(list(queueid, queuename), is.null))))
     toInsert <- data.frame(queueid = queueid
                     , group = group
                     , queuename = queuename
@@ -208,7 +205,7 @@ removeWaitQueue <- function(queueid) {
 
 removeWaitBatch <- function(batchid) {
     df <- getWaitBatch()
-    if (any(batchid %in% df$batchid) {
+    if (any(batchid %in% df$batchid)) {
         df <- df[which(!df$batchid %in% batchid), ]
         writeWaitBatch(df)
     }
@@ -237,9 +234,12 @@ historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
     # Remove from waitQueue
     removeWaitQueue(queueid = queueid)
     
+    # Get columns order
+    cols <- colnames(getHistorizedQueue())
+    
     # Add in historizedQueue
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedQueue", df, append = TRUE)
+    dbWriteTable(mydb, "HistorizedQueue", df[,match(cols, colnames(df))], append = TRUE)
     dbDisconnect(mydb)
 }
 
@@ -266,8 +266,11 @@ historizedBatch <- function(batchid, status, endDate = getDate()) {
     
     removeWaitBatch(batchid = batchid)
     
+    # Get columns order
+    cols <- colnames(getHistorizedBatch())
+    
     # Add in historizedBatch
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
-    dbWriteTable(mydb, "HistorizedBatch", df, append = TRUE)
+    dbWriteTable(mydb, "HistorizedBatch", df[,match(cols, colnames(df))], append = TRUE)
     dbDisconnect(mydb)
 }

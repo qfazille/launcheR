@@ -4,11 +4,9 @@
 \alias{getWaitBatch}
 \title{getWaitBatch}
 \usage{
-getWaitBatch(with.done = TRUE, reset = FALSE)
+getWaitBatch(reset = FALSE)
 }
 \arguments{
-\item{with.done}{Logical If true show also ended batchs. (Default TRUE)}
-
 \item{reset}{Logical If true then reset table. (Default FALSE)}
 }
 \description{

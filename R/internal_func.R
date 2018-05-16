@@ -1,9 +1,6 @@
+#' @import methods
 waitQueue <- function(){
 
-    ### Write queue_name, group & owner in Renviron
-    ##writeRenviron(prefix = "LR_Q", value = queue_name)
-    ##if (!is.null(group)) writeRenviron(prefix = "LR_G", value = group)
-    ##writeRenviron(prefix = "LR_QOWN", value = owner)
     queue <- loadMeta()
     
     # Get data
@@ -14,19 +11,37 @@ waitQueue <- function(){
     writeRenviron(prefix = "LR_QID", value = newid)
 
     # if no group, then no check
-    if (is.null(queue@group)) {
-        addWaitQueue(queueid = newid, queuename = queue@name, owner = queue@owner, wait = 0, startDate = getDate(), realStartDate = getDate())
+    if (is.na(queue@group)) {
+        addWaitQueue(queueid = newid
+                    , queuename = queue@name
+                    , desc = queue@desc
+                    , owner = queue@owner
+                    , wait = 0
+                    , startDate = getDate()
+                    , realStartDate = getDate())
         # queue can be launched
     } else {
         # Check if group not present
         if (nrow(df[which(df$group == queue@group),]) == 0) {
-            addWaitQueue(queueid = newid, group = queue@group, queuename = queue@name, owner = queue@owner, startDate = getDate(), realStartDate = getDate())
+            addWaitQueue(queueid = newid
+                        , group = queue@group
+                        , queuename = queue@name
+                        , desc = queue@desc
+                        , owner = queue@owner
+                        , startDate = getDate()
+                        , realStartDate = getDate())
             # queue can be launched
         } else {
             # if group already present then need to wait for max(id)
             wait_for_id <- max(df[which(df$group == queue@group),"queueid"])
             # add in waiting queue
-            addWaitQueue(queueid = newid, group = queue@group, queuename = queue@name, owner = queue@owner, wait = wait_for_id, startDate = getDate())
+            addWaitQueue(queueid = newid
+                        , group = queue@group
+                        , queuename = queue@name
+                        , desc = queue@desc
+                        , owner = queue@owner
+                        , wait = wait_for_id
+                        , startDate = getDate())
             # wait before launch queue
             waitForQueueid(id = wait_for_id)
             launchWaitQueue(id = newid)
@@ -35,6 +50,7 @@ waitQueue <- function(){
     }
 }
 
+#' @import methods
 waitBatch <- function(Rank) {
     # Get QID
     queue_id     <- getQueueid()
@@ -74,7 +90,7 @@ waitBatch <- function(Rank) {
     df <- df[which(df$queueid == queue_id)]
     if (nrow(df) > 0) {
         max_BID <- max(df$batchid)
-        df <- test[which(test$batchid != max_BID),]
+        df <- df[which(df$batchid != max_BID),]
         max_BID_withTRUE <- which(df$WaitBeforeNext == TRUE)[length(which(df$WaitBeforeNext == TRUE))]
         # Add all previous with WaitBeforeNext == FALSE
         if (max_BID_withTRUE != max(df$batchid)) {
@@ -116,15 +132,16 @@ waitBatch <- function(Rank) {
     writeRenviron(prefix = "LR_BID", value = newid)
 }
 
-releaseBatch <- function(id = NULL, batch_rank = NULL, status = "OK") {
-    stopifnot(any(!sapply(list(id, batch_rank), is.null)))
+#' @import methods
+releaseBatch <- function(id = NULL, Rank = NULL, status = "OK") {
+    stopifnot(any(!sapply(list(id, Rank), is.null)))
     if (is.null(id)) {
-        id <- getBatchidFromRank(batch_rank)
+        id <- getBatchidFromRank(batch_rank = Rank)
     }
     df <- getWaitBatch()
     bh <- df[which(df$batchid == id), ]
     queueid <- unique(bh$queueid)
-    qh <- df[which(df$queueid == queueid), ]
+    #qh <- df[which(df$queueid == queueid), ]
     if (nrow(bh) != 0) {
         historizedBatch(batchid = id, status = status)
         if (unique(bh$endIfKO) == TRUE & status == "KO") {
@@ -134,6 +151,7 @@ releaseBatch <- function(id = NULL, batch_rank = NULL, status = "OK") {
     } # Else batchid already historized (can happend if already abandonned)
 }
 
+#' @import methods
 releaseQueue <- function(id = NULL) {
     if (is.null(id)) {
         id    <- getQueueid()
@@ -150,6 +168,7 @@ releaseQueue <- function(id = NULL) {
     historizedQueue(queueid = id)
 }
 
+#' @import methods
 writeRenviron <- function(prefix, value) {
     x <- readLines(".Renviron")
     toChange <- which(startsWith(x, paste0(prefix, "=")))
@@ -161,6 +180,7 @@ writeRenviron <- function(prefix, value) {
     cat(x, file = ".Renviron", sep = linebreak())
 }
 
+#' @import methods
 setRData <- function(file) {
     if (file.exists(file)) {
         file.rename(from = file, to = ".RData")
