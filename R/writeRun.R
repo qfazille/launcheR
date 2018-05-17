@@ -21,8 +21,8 @@ runInit <- function(object) {
         cat(setTMPDIR(object@tmpdir), file = runFile, append = TRUE)
     }
     
-    # Write in runFile
-    cmd <- paste0("'launcheR:::waitQueue()' ", linebreak())
+    # Write in runFile, the || execute only if error. In case queue is abandonned for any reason (manual releaseQueue before its launch ?) 
+    cmd <- paste0("'launcheR:::waitQueue()' || exit", linebreak())
     line_ <- paste(rscriptOptions(execute=TRUE), cmd)
     cat(line_, file = runFile, append = TRUE)
     
@@ -41,10 +41,10 @@ runBatch <- function(batch, runFile) {
         # Get folder
         folder <- dirname(runFile)
 
-        cmd_waitBatch <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::waitBatch(Rank=\"", batch@Rank, "\")' ;", linebreak()))
+        cmd_waitBatch <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::waitBatch(Rank=", batch@Rank, ")' ;", linebreak()))
 
         if (exist_params) {
-            cmd_setRData <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::setRData(Rank=\"", batch@Rank, "\")' ;", linebreak()))
+            cmd_setRData <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::setRData(Rank=", batch@Rank, ")' ;", linebreak()))
         } else {
             cmd_setRData <- NULL
         }
@@ -53,8 +53,8 @@ runBatch <- function(batch, runFile) {
         run  <- paste(rscriptOptions(restore = exist_params), batch@path, redirect_log(), batch@logfile, errorRedir(), ";", linebreak())
 
         # release batch : status
-        release_OK    <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=\"", batch@Rank, "\", status=\"OK\")' "))
-        release_KO <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=\"", batch@Rank, "\", status=\"KO\")' "))
+        release_OK    <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=", batch@Rank, ", status=\"OK\")' "))
+        release_KO <- paste(rscriptOptions(execute = TRUE), paste0("'launcheR:::releaseBatch(Rank=", batch@Rank, ", status=\"KO\")' "))
         cmd_releaseBatch  <- setErrorIfElse(release_OK, release_KO)
 
         cmd_all <- paste0(cmd_setRData, run, cmd_releaseBatch)

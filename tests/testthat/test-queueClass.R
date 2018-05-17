@@ -10,7 +10,7 @@ run_test <- function(obj, types = c("name", "group", "folder", "tmpdir", "logdir
     if ("group" %in% types) {
         expect_is(obj@group, "character")
     } else {
-        expect_null(obj@group)
+        expect_equal(obj@group, as.character(NA))
     }
 
     if ("tmpdir" %in% types) {
@@ -33,6 +33,7 @@ run_test <- function(obj, types = c("name", "group", "folder", "tmpdir", "logdir
             }
         }
     }
+
     if ("folder" %in% types) expect_is(obj@folder, "character")
     if ("tmpdir" %in% types) expect_is(obj@tmpdir, "character")
     if ("logdir" %in% types) expect_is(obj@logdir, "character")

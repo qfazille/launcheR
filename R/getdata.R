@@ -156,12 +156,13 @@ launchWaitQueue <- function(id) {
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect
 addWaitBatch <- function(batchid, queueid, group = as.character(NA), path, batchname, queuename, desc = as.character(NA), parallelizable, waitBeforeNext, endIfKO, wait = 0, progress = 0, startDate = as.character(NA)) {
-    stopifnot(!any(unlist(lapply(list(batchid, queueid, batchname, parallelizable, wait, progress, waitBeforeNext, endIfKO), is.null))))
+    stopifnot(!any(unlist(lapply(list(batchid, queueid, batchname, queuename, parallelizable, wait, progress, waitBeforeNext, endIfKO), is.null))))
     toInsert <- data.frame(batchid = batchid
                     , queueid = queueid
                     , group = group
                     , path = path
                     , batchname = batchname
+                    , queuename = queuename
                     , desc = desc
                     , parallelizable = parallelizable
                     , waitBeforeNext = waitBeforeNext
@@ -171,7 +172,7 @@ addWaitBatch <- function(batchid, queueid, group = as.character(NA), path, batch
                     , startDate = startDate
                     , realStartDate = as.character(NA)
                     , stringsAsFactors = FALSE)
-    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character")))
+    stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character")))
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
     dbWriteTable(mydb, "WaitBatch", toInsert, append = TRUE)
     dbDisconnect(mydb)

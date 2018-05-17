@@ -189,7 +189,7 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
 #' \dontrun{
 #' vis(c(1:3))
 #' }
-vis <- function(queueid = NULL, last, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
+vis <- function(queueid = NULL, last = NULL, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
     if (is.null(queueid) & is.null(last)) {
         queueid <- max(getHistorizedBatch()$queueid)
     } else if (is.null(queueid)) {

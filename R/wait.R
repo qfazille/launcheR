@@ -1,5 +1,5 @@
-waitFor <- function(type = c("queue", "batch"), id) {
-    if (length(id) == 0 & id == 0) {
+waitFor <- function(type = c("queue", "batch"), waiter_id, waited_ids) {
+    if (length(waited_ids) == 0 || waited_ids == 0) {
         wait <- FALSE
     } else {
         wait <- TRUE
@@ -7,20 +7,26 @@ waitFor <- function(type = c("queue", "batch"), id) {
     
     while(wait) {
         if (type == "queue") {
+            # Check for waited_ids
             df <- getWaitQueue()
-            wait <- any(id %in% df$queueid)
+            wait <- any(waited_ids %in% df$queueid)
+            # Check if waiter_id abandonned
+            if (!waiter_id %in% df$queueid) stop(paste("Queueid", waiter_id, "already abandonned"))
         } else {
+            # Check for waited_ids
             df <- getWaitBatch()
-            wait <- any(id %in% df$batchid)
+            wait <- any(waited_ids %in% df$batchid)
+            # Check if waiter_id abandonned
+            if (!waiter_id %in% df$batchid) stop(paste("Batchid", waiter_id, "already abandonned"))
         }
         if (wait) Sys.sleep(2)
     }
 }
 
-waitForBatchid <- function(id) {
-    waitFor(type = "batch", id = id)
+waitForBatchid <- function(waiter_id, waited_ids) {
+    waitFor(type = "batch", waiter_id = waiter_id, waited_ids = waited_ids)
 }
 
-waitForQueueid <- function(id) {
-    waitFor(type = "queue", id = id)
+waitForQueueid <- function(waiter_id, waited_ids) {
+    waitFor(type = "queue", waiter_id = waiter_id, waited_ids = waited_ids)
 }

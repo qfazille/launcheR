@@ -2,7 +2,7 @@
 waitQueue <- function(){
 
     queue <- loadMeta()
-    
+
     # Get data
     df <- getWaitQueue()
 
@@ -43,7 +43,7 @@ waitQueue <- function(){
                         , wait = wait_for_id
                         , startDate = getDate())
             # wait before launch queue
-            waitForQueueid(id = wait_for_id)
+            waitForQueueid(waiter_id = newid, waited_ids = wait_for_id)
             launchWaitQueue(id = newid)
             # launch
         }
@@ -58,11 +58,11 @@ waitBatch <- function(Rank) {
     # Get meta
     queue <- loadMeta()
     batch <- batchFromRank(object = queue, Rank = Rank)
-    
+
     # Write new batchid (I don't think LR_BID will exists anymore..., to be check later)
     newid <- newidBatch()
     writeRenviron(prefix = paste0("LR_BR", Rank), value = newid)
-    
+
     # There are 2 checks :
     #   - search for other same path with parallelizable = FALSE
     #   - search for other batch in queueid according to wbn
@@ -74,10 +74,10 @@ waitBatch <- function(Rank) {
         if (batch@parallelizable) {
             id_wait_max_par <- df[which(df$batchid %in% id_wait_max), "parallelizable"]
             # Either one batchid with FALSE or one or several batchid with par = TRUE
-            if (all(id_wait_max_par)) {
-                to_wait <- unique(df[which(df$batchid %in% id_wait_max), "wait"]) # should be one value
+            if (!all(as.logical(id_wait_max_par))) {
+                to_wait_1 <- id_wait_max
             } else {
-                to_wait <- id_wait_max
+                to_wait_1 <- c()
             }
         } else {
             to_wait_1 <- id_wait_max
@@ -85,27 +85,44 @@ waitBatch <- function(Rank) {
     } else {
         to_wait_1 <- c()
     }
-    
+
     df <- wb
-    df <- df[which(df$queueid == queue_id)]
+    df <- df[which(df$queueid == queue_id),]
+
+    # If batch for this QID
     if (nrow(df) > 0) {
+        # Get max of bid (for QID)
         max_BID <- max(df$batchid)
-        df <- df[which(df$batchid != max_BID),]
-        max_BID_withTRUE <- which(df$WaitBeforeNext == TRUE)[length(which(df$WaitBeforeNext == TRUE))]
-        # Add all previous with WaitBeforeNext == FALSE
-        if (max_BID_withTRUE != max(df$batchid)) {
-            toAdd <- df[which(df$batchid > max_BID_withTRUE), "batchid"]
+
+        if (unique(df[which(df$batchid == max_BID), "waitBeforeNext"]) == 1) {
+            # If wbf for this max is 1
+            # look for the max BID with WBF = TRUE
+            # - wait = c(maxBID, all previous with WBF = 0)
+            df <- df[which(df$batchid != max_BID),]
+            # to get all previous with WBF = 0, first get max_bid with wbf = 1
+            vect_max_BID_withTRUE <- df[which(df$waitBeforeNext == TRUE), "batchid"]
+            if (length(vect_max_BID_withTRUE) == 0) {
+                # If no max_BID with WBF = true, then it means that we can take all the other (can be empty)
+                BID_withTRUE <- unique(df[which(df$waitBeforeNext == FALSE), "batchid"])
+            } else {
+                # If there is a max_BID with WBF = true, then take only WBF = false with bid > max_BID_withTRUE
+                max_BID_withTRUE <- max(vect_max_BID_withTRUE)
+                BID_withTRUE <- unique(df[which(df$waitBeforeNext == FALSE & df$batchid > max_BID_withTRUE), "batchid"])
+            }
+            to_wait_2 <- c(max_BID, BID_withTRUE)
         } else {
-            toAdd <- c()
+            # If wbf for this max is 0
+            # - wait = c(the wait for the max_BID)
+            to_wait_2 <- df[which(df$batchid == max_BID), "wait"] # Can be several lines (automatically droped in vector)
         }
-        to_wait_2 <- c(max_BID, toAdd)
     } else {
+        # No batch
         to_wait_2 <- c()
     }
     id_to_wait <- c(to_wait_1, to_wait_2)
     if (length(id_to_wait) == 0) id_to_wait <- 0
-    
-    
+
+
     # add to waiting batch
     addWaitBatch(batchid = newid
         , queueid = queue_id
@@ -120,14 +137,14 @@ waitBatch <- function(Rank) {
         , wait = id_to_wait # This can create several lines
         , progress = 0
         , startDate = getDate())
-    
+
     # wait before launch (stop if batch abandonned)
-    waitForBatchid(id = id_to_wait)
-    
+    waitForBatchid(waiter_id = newid, waited_ids = id_to_wait)
+
     # Write realStartDate & set wait = 0
     launchWaitBatch(id = newid)
     # launch
-    
+
     # Just before the batch launch, update the LR_BID value in .Renviron (for progress function)
     writeRenviron(prefix = "LR_BID", value = newid)
 }
@@ -156,7 +173,7 @@ releaseQueue <- function(id = NULL) {
     if (is.null(id)) {
         id    <- getQueueid()
     }
-    
+
     # Remove from waitBatch (priority 1)
     # If the queue terminate normally, there should not be any batch in the WaitBatch table anymore. (Because the releaseBatch function historized batchs)
     df <- getWaitBatch()
@@ -181,10 +198,12 @@ writeRenviron <- function(prefix, value) {
 }
 
 #' @import methods
-setRData <- function(file) {
-    if (file.exists(file)) {
-        file.rename(from = file, to = ".RData")
+setRData <- function(Rank) {
+    pattern <- paste0("params", Rank, ".RData")
+    file_ <- list.files(pattern = pattern)
+    if (length(file_) == 1) {
+        file.rename(from = file_, to = ".RData")
     } else {
-        stop(paste("File", file, "doesn't exist"))
+        stop(paste("File", pattern, "doesn't exist"))
     }
 }

@@ -212,14 +212,14 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     if (object@clean) {
         cleanFolder(folder = object@folder, runFile = runFile)
     }
-
+    
     # Launch file in background
     logFile <- file.path(object@folder, "run.log")
     cmd <- launchFile(runFile = runFile, logFile = logFile)
-    #system(cmd)
-    print(cmd)
+    system(cmd)
+    
     # Wait 1sec just the time database is updated
-    #Sys.sleep(1)
+    Sys.sleep(1)
 })
 
 #' @aliases batchFromRank
@@ -239,8 +239,8 @@ setGeneric(name="batchFromRank",def=function(object, Rank)   {
 #' @rdname batchFromRank
 #' @exportMethod batchFromRank
 setMethod(f = "batchFromRank", signature = "queue", definition = function(object, Rank) {
-    res <- sapply(object@batchs, function(x) {if (x@Rank == Rank) x})
-    res[[1]]
+    cond <- sapply(object@batchs, function(x) x@Rank == Rank)
+    object@batchs[cond][[1]]
 })
 
 
