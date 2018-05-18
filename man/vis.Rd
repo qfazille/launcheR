@@ -4,7 +4,7 @@
 \alias{vis}
 \title{vis}
 \usage{
-vis(queueid = NULL, last, show_xlabs = TRUE, show_ylabs = TRUE,
+vis(queueid = NULL, last = NULL, show_xlabs = TRUE, show_ylabs = TRUE,
   show_queue = TRUE, show_group = TRUE, show_owner = TRUE,
   show_batch = "alias")
 }

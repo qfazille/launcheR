@@ -62,12 +62,26 @@ progress <- function(percentage = NULL) {
             # update progress
             df <- getWaitBatch()
             if (percentage > 100) percentage <- 100
-            tryCatch({
-                df[which(df$batchid == BID & df$queueid == QID), "progress"]   <- percentage
-                writeWaitBatch(df = df)
-            }, error = function(err) {
-                warning(paste("Queueid", QID, "- Batchid", BID, "not found"))
-            })
+            mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+            res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
+            dbClearResult(res)
+            cpt <- 0
+            repeat {
+                tryCatch({
+                    rs <- dbSendStatement(mydb, "update WaitBatch set progress = :x where batchid = :bid and queueid = :qid")
+                    dbBind(rs, params = list(x = percentage, bid = BID, qid = QID))
+                    dbClearResult(rs)
+                    break
+                }, error = function(err) {
+                    Sys.sleep(0.2)
+                    cpt <- cpt + 1
+                    if (cpt == 50) {
+                        print(paste("Error in progress :", err))
+                        break
+                    }
+                })
+            }
+            dbDisconnect(mydb)
         }
     }
 }
@@ -76,7 +90,7 @@ progress <- function(percentage = NULL) {
 #' @title getWaitQueue
 #' @description Get the waiting queue
 #' @param reset Logical If true then reset table. (Default FALSE)
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable dbSendQuery dbClearResult
 #' @importFrom RSQLite SQLite
 #' @export
 #' @examples
@@ -86,6 +100,8 @@ progress <- function(percentage = NULL) {
 getWaitQueue <- function(reset = FALSE) {
     checkDBExistance()
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
+    dbClearResult(res)
     if (reset) {
         emptyTable("WaitQueue")
         df <- get_emptyTable("WaitQueue")
@@ -100,7 +116,7 @@ getWaitQueue <- function(reset = FALSE) {
 #' @title getWaitBatch
 #' @description Get the waiting queue
 #' @param reset Logical If true then reset table. (Default FALSE)
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable dbSendQuery dbClearResult
 #' @importFrom RSQLite SQLite
 #' @export
 #' @examples
@@ -109,7 +125,9 @@ getWaitQueue <- function(reset = FALSE) {
 #' }
 getWaitBatch <- function(reset = FALSE) {
     checkDBExistance()
-    mydb <- DBI::dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
+    dbClearResult(res)
     if (reset) {
         emptyTable("WaitBatch")
         df <- get_emptyTable("WaitBatch")
@@ -126,7 +144,7 @@ getWaitBatch <- function(reset = FALSE) {
 #' @param reset Logical If true then reset table. (Default FALSE)
 #' @param queueid Numeric vector List of queueid to show. If NULL shows all. (Default NULL)
 #' @param batchid Numeric vector List of batchid to show. If NULL shows all. (Default NULL)
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable dbSendQuery dbClearResult
 #' @importFrom RSQLite SQLite
 #' @export
 #' @examples
@@ -136,6 +154,8 @@ getWaitBatch <- function(reset = FALSE) {
 getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
     checkDBExistance()
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
+    dbClearResult(res)
     if (reset) {
         emptyTable("HistorizedBatch")
         df <- get_emptyTable("HistorizedBatch")
@@ -153,7 +173,7 @@ getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
 #' @description Get the waiting queue
 #' @param reset Logical If true then reset table. (Default FALSE)
 #' @param queueid Numeric vector List of queueid to show. If NULL shows all. (Default NULL)
-#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable
+#' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbReadTable dbSendQuery dbClearResult
 #' @importFrom RSQLite SQLite
 #' @export
 #' @examples
@@ -163,6 +183,8 @@ getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
 getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
     checkDBExistance()
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
+    dbClearResult(res)
     if (reset) {
         emptyTable("HistorizedQueue")
         df <- get_emptyTable("HistorizedQueue")
