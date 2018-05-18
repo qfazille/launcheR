@@ -318,6 +318,10 @@ removeWaitBatch <- function(batchid) {
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbSendQuery dbClearResult
 historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
     df <- getWaitQueue()
+    
+    # If queueid is not present in df (possible in case queue already abandonned)
+    if (!queueid %in% df$queueid) return(NULL)
+    
     # keep order in queueid (param)
     df <- df[match(queueid, df$queueid), c("queueid", "group", "queuename", "desc", "owner", "startDate", "realStartDate")]
     

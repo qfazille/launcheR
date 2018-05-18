@@ -163,13 +163,13 @@ releaseBatch <- function(id = NULL, Rank = NULL, status = "OK") {
         historizedBatch(batchid = id, status = status)
         if (unique(bh$endIfKO) == TRUE & status == "KO") {
             # If endIfKO & status = KO then historized the whole queueid (waitBatch will get the information)
-            historizedQueue(queueid = queueid, status = "KO")
+            releaseQueue(id = queueid, status = "KO")
         }
     } # Else batchid already historized (can happend if already abandonned)
 }
 
 #' @import methods
-releaseQueue <- function(id = NULL) {
+releaseQueue <- function(id = NULL, status = "OK") {
     if (is.null(id)) {
         id    <- getQueueid()
     }
@@ -182,7 +182,7 @@ releaseQueue <- function(id = NULL) {
         historizedBatch(batchid = bh$batchid, status = "abandonned")
     }
     # Write waitQueue (priority 2)
-    historizedQueue(queueid = id)
+    historizedQueue(queueid = id, status = status)
 }
 
 #' @import methods
