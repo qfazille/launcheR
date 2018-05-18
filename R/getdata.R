@@ -111,7 +111,7 @@ resetDB <- function() {
 
 #' @importFrom DBI dbConnect dbWriteTable dbDisconnect dbSendQuery dbClearResult
 emptyTable <- function(table_name) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     # repeat try to add
     dbClearResult(res)
@@ -123,7 +123,7 @@ emptyTable <- function(table_name) {
 # # writeWaitQueue <- function(df) {
     # # df <- factors2char(df)
     # # stopifnot(all(sapply(df, class) == sapply(getWaitQueue(), class)))
-    # # mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    # # mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     # # res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     # # dbClearResult(res)
     # # repeat {
@@ -137,7 +137,7 @@ emptyTable <- function(table_name) {
 # # writeWaitBatch <- function(df) {
     # # df <- factors2char(df)
     # # stopifnot(all(sapply(df, class) == sapply(getWaitBatch(), class)))
-    # # mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    # # mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     # # res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     # # dbClearResult(res)
     # # repeat {
@@ -149,7 +149,7 @@ emptyTable <- function(table_name) {
 
 #' @importFrom DBI dbConnect dbSendQuery dbClearResult dbSendStatement dbBind dbDisconnect
 launchWaitBatch <- function(id) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -173,7 +173,7 @@ launchWaitBatch <- function(id) {
 
 #' @importFrom DBI dbConnect dbSendQuery dbClearResult dbSendStatement dbBind dbDisconnect
 launchWaitQueue <- function(id) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -214,7 +214,7 @@ addWaitBatch <- function(batchid, queueid, group = as.character(NA), path, batch
                     , realStartDate = as.character(NA)
                     , stringsAsFactors = FALSE)
     stopifnot(all(sapply(toInsert, class) == c("numeric", "numeric", "character", "character", "character", "character", "character", "logical", "logical", "logical", "numeric", "numeric", "character", "character")))
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -247,7 +247,7 @@ addWaitQueue <- function(queueid, group = as.character(NA), queuename, desc = as
                     , realStartDate = realStartDate
                     , stringsAsFactors = FALSE)
     stopifnot(all(sapply(toInsert, class) == c("numeric", "character", "character", "character", "character", "numeric", "character", "character")))
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -269,7 +269,7 @@ addWaitQueue <- function(queueid, group = as.character(NA), queuename, desc = as
 
 #' @importFrom DBI dbConnect dbSendQuery dbClearResult dbSendStatement dbBind dbDisconnect
 removeWaitQueue <- function(queueid) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -293,7 +293,7 @@ removeWaitQueue <- function(queueid) {
 
 #' @importFrom DBI dbConnect dbSendQuery dbClearResult dbSendStatement dbBind dbDisconnect
 removeWaitBatch <- function(batchid) {
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -346,7 +346,7 @@ historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
     cols <- colnames(getHistorizedQueue())
     
     # Add in historizedQueue
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0
@@ -393,7 +393,7 @@ historizedBatch <- function(batchid, status, endDate = getDate()) {
     cols <- colnames(getHistorizedBatch())
     
     # Add in historizedBatch
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     cpt <- 0

@@ -62,7 +62,7 @@ progress <- function(percentage = NULL) {
             # update progress
             df <- getWaitBatch()
             if (percentage > 100) percentage <- 100
-            mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+            mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
             res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
             dbClearResult(res)
             cpt <- 0
@@ -99,7 +99,7 @@ progress <- function(percentage = NULL) {
 #' }
 getWaitQueue <- function(reset = FALSE) {
     checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     if (reset) {
@@ -125,7 +125,7 @@ getWaitQueue <- function(reset = FALSE) {
 #' }
 getWaitBatch <- function(reset = FALSE) {
     checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     if (reset) {
@@ -153,7 +153,7 @@ getWaitBatch <- function(reset = FALSE) {
 #' }
 getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
     checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     if (reset) {
@@ -182,7 +182,7 @@ getHistorizedBatch <- function(reset = FALSE, queueid = NULL, batchid = NULL) {
 #' }
 getHistorizedQueue <- function(reset = FALSE, queueid = NULL) {
     checkDBExistance()
-    mydb <- dbConnect(RSQLite::SQLite(), datafilepath())
+    mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
     dbClearResult(res)
     if (reset) {

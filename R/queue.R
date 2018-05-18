@@ -201,7 +201,8 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
         if (i == length(object@batchs)) {
             cat("wait", file = runFile, append = TRUE, sep = linebreak())
         } else {
-            cat("sleep 2", file = runFile, append = TRUE, sep = linebreak())
+            # I must keep this line in order to be sure that all launcheR:::waitBatch(Rank=?) are launched in good order
+            cat("sleep 1", file = runFile, append = TRUE, sep = linebreak())
         }
     }
 
@@ -219,7 +220,7 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
     system(cmd)
     
     # Wait 1sec just the time database is updated
-    Sys.sleep(1)
+    Sys.sleep(2)
 })
 
 #' @aliases batchFromRank
