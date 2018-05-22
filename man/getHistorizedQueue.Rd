@@ -4,11 +4,9 @@
 \alias{getHistorizedQueue}
 \title{getHistorizedQueue}
 \usage{
-getHistorizedQueue(reset = FALSE, queueid = NULL)
+getHistorizedQueue(queueid = NULL)
 }
 \arguments{
-\item{reset}{Logical If true then reset table. (Default FALSE)}
-
 \item{queueid}{Numeric vector List of queueid to show. If NULL shows all. (Default NULL)}
 }
 \description{

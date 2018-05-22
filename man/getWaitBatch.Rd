@@ -4,7 +4,7 @@
 \alias{getWaitBatch}
 \title{getWaitBatch}
 \usage{
-getWaitBatch(reset = FALSE)
+getWaitBatch()
 }
 \arguments{
 \item{reset}{Logical If true then reset table. (Default FALSE)}

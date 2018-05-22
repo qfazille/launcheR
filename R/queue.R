@@ -202,7 +202,7 @@ setMethod(f = "launch", signature = "queue", definition = function(object) {
             cat("wait", file = runFile, append = TRUE, sep = linebreak())
         } else {
             # I must keep this line in order to be sure that all launcheR:::waitBatch(Rank=?) are launched in good order
-            cat("sleep 1", file = runFile, append = TRUE, sep = linebreak())
+            cat("sleep 2", file = runFile, append = TRUE, sep = linebreak())
         }
     }
 

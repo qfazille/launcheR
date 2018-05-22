@@ -4,15 +4,20 @@
 \alias{launcheR.reset}
 \title{launcheR.reset}
 \usage{
-launcheR.reset(historized = FALSE)
+launcheR.reset(type = "all", queueid = NULL, prefix = NULL)
 }
 \arguments{
-\item{historized}{Logical If historized queue/batchs must be also reset.}
+\item{type}{Character One of c("all", "wait", "historized")}
+
+\item{queueid}{Number vector of queueid(s)}
+
+\item{prefix}{Character prefix of the queuename(s)}
 }
 \description{
-launcheR.reset reset all waiting queue/batchs information.\cr
+launcheR.reset reset waiting queue/batchs information.\cr
     This function should be use in case a batch or queue is stuck in the progress batchs.\cr
     That can happen when a process has been killed forcefully.
+    The function can also be used to remove the historized batchs/queues
 }
 \examples{
 \dontrun{

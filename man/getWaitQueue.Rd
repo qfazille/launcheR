@@ -4,10 +4,7 @@
 \alias{getWaitQueue}
 \title{getWaitQueue}
 \usage{
-getWaitQueue(reset = FALSE)
-}
-\arguments{
-\item{reset}{Logical If true then reset table. (Default FALSE)}
+getWaitQueue()
 }
 \description{
 Get the waiting queue

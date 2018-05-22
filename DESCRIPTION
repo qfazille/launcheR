@@ -1,7 +1,7 @@
 Package: launcheR
 Type: Package
 Title: Rscripts easy
-Version: 0.0.1.9021
+Version: 0.0.2
 Authors@R: c(person("Quentin", "Fazilleau", , "quentin.fazilleau@gmail", role = c("aut", "cre")))
 Maintainer: qfaz <quentin.fazilleau@gmail.com>
 Description: Easy Rscript launch with waiting queue management. If use on Shiny Application through RSConnect must use version > 1.5.10.
