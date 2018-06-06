@@ -1,10 +1,12 @@
+library(testthat)
+setwd("./tests/testthat/")
+source("./nohelper-checkers.R")
 # Possibility in tests_to_do :
 #  - single
 #  - basic
 #  - intermediate
 #  - advanced
-#tests_to_do <- c("single", "basic", "intermediate", "advanced")
-tests_to_do <- c("single")
+tests_to_do <- c("single", "basic", "intermediate", "advanced")
 clean <- FALSE
 
 ##########
@@ -158,7 +160,7 @@ if ("intermediate" %in% tests_to_do) {
     qi2b3_desc <- "test : QI2 - B3"
     queue_qi2 <- createQueue(name = qi2, desc = qi2_desc)
     queue_qi2 <- addBatch(object = queue_qi2, path = batch1, name = qi2b1, desc = qi2b1_desc)
-    queue_qi2 <- addBatch(object = queue_qi2, path = batch1, name = qi2b2, desc = qi2b2_desc, waitBeforeNext = FALSE)
+    queue_qi2 <- addBatch(object = queue_qi2, path = batch3, name = qi2b2, desc = qi2b2_desc, waitBeforeNext = FALSE, params = list(param = 30))
     queue_qi2 <- addBatch(object = queue_qi2, path = batch2, name = qi2b3, desc = qi2b3_desc)
     launch(queue_qi2)
 
@@ -211,7 +213,7 @@ if ("advanced" %in% tests_to_do) {
     queue_qa1 <- addBatch(object = queue_qa1, path = batch3, name = qa1b1, desc = qa1b1_desc, params = list(param = 12))
     launch(queue_qa1)
 
-    qa2 <- randomName("QA")
+    qa2 <- randomName("testQA")
     qa2_desc <- "test : QA2"
     qa2b1 <- randomName("B")
     qa2b1_desc <- "test : QA2-B1"
@@ -219,7 +221,7 @@ if ("advanced" %in% tests_to_do) {
     queue_qa2 <- addBatch(object = queue_qa2, path = batch3, name = qa2b1, desc = qa2b1_desc, params = list(param = 8))
     launch(queue_qa2)
 
-    qa3 <- randomName("QA")
+    qa3 <- randomName("testQA")
     qa3_desc <- "test : QA3"
     qa3b1 <- randomName("B")
     qa3b1_desc <- "test : QA3-B1"

@@ -150,8 +150,6 @@ checkHB <- function(name = NULL, minStartDate = list(), maxStartDate = list(), m
 
     # Check every other parameters
     others_params <- list(...)
-    print("ICIIII")
-    print(others_params)
     for (i in names(others_params)) {
         if (df[1, i] != others_params[[i]]) {
             toReturn <- FALSE
