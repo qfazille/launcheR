@@ -6,9 +6,6 @@
 \usage{
 getWaitBatch()
 }
-\arguments{
-\item{reset}{Logical If true then reset table. (Default FALSE)}
-}
 \description{
 Get the waiting queue
 }

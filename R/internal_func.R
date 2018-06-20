@@ -186,6 +186,7 @@ releaseQueue <- function(id = NULL, status = "OK") {
 }
 
 #' @import methods
+#' @importFrom gdata startsWith
 writeRenviron <- function(prefix, value) {
     x <- readLines(".Renviron")
     toChange <- which(startsWith(x, paste0(prefix, "=")))
