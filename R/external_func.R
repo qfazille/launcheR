@@ -14,7 +14,7 @@
 #' \dontrun{
 #' q <- createQueue()
 #' }
-#' @importFrom methods new
+#' @import methods
 createQueue <- function(name = basename(tempfile(pattern = "queue", tmpdir = "")), desc = NULL, group = NULL, owner = Sys.info()["user"], folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL) {
     new(Class = "queue", name = name, desc = desc, group = group, owner = owner, folder = folder, logdir = logdir, clean = clean, tmpdir = tmpdir)
 }

@@ -33,7 +33,7 @@ setClass(
     )
 )
 
-#' @importFrom methods validObject
+#' @import methods
 setMethod(f = "initialize"
         , signature = "queue"
         , definition = function(.Object, name = NULL, desc = NULL, group = NULL, owner = NULL, folder = NULL, logdir = NULL, clean = TRUE, tmpdir = NULL)
@@ -116,7 +116,7 @@ setGeneric(name = "addBatch", def = function(object, ...) {
 #' launch(q)
 #' }
 #' @author Quentin Fazilleau
-#' @importFrom methods new
+#' @import methods
 setMethod(f = "addBatch", signature = "queue", definition = function(object, path = NULL, name = NULL, desc = NULL, params = NULL, parallelizable = TRUE, waitBeforeNext = TRUE, endIfKO = TRUE, logfile = NULL) {
     # Get Rank
     Rank <- length(object@batchs) + 1
