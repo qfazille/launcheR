@@ -182,7 +182,6 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
 #' @param show_group Logical Display queue group. (Default TRUE)
 #' @param show_owner Logical Display queue owner. (Default TRUE)
 #' @param show_batch Character "alias" or "path" to choose the label to display. (Default "alias")
-#' @import ggplot2
 #' @importFrom stats aggregate
 #' @export
 #' @examples
@@ -190,6 +189,9 @@ dataVis <- function(queueid, show_queue = TRUE, show_group = TRUE, show_owner = 
 #' vis(c(1:3))
 #' }
 vis <- function(queueid = NULL, last = NULL, show_xlabs = TRUE, show_ylabs = TRUE, show_queue = TRUE, show_group = TRUE, show_owner = TRUE, show_batch = "alias") {
+    if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop("Package ggplot2 needed for this function to work. Please install it.", call. = FALSE)
+    }
     if (is.null(queueid) & is.null(last)) {
         queueid <- max(getHistorizedBatch()$queueid)
     } else if (is.null(queueid)) {
@@ -203,38 +205,38 @@ vis <- function(queueid = NULL, last = NULL, show_xlabs = TRUE, show_ylabs = TRU
     plotdf <- dataVis(queueid = queueid, show_queue = show_queue, show_group = show_group, show_owner = show_owner, show_batch = show_batch)
 
     # plot rectangles
-    p <- ggplot(plotdf) +
-        geom_rect(aes_string(xmin = "xmin", xmax = "xmax", ymin = "ymin", ymax = "ymax", fill = "color"), linetype = "solid", color = "black") +
-        scale_fill_identity(guide = "legend", name = NULL
+    p <- ggplot2::ggplot(plotdf) +
+        ggplot2::geom_rect(ggplot2::aes_string(xmin = "xmin", xmax = "xmax", ymin = "ymin", ymax = "ymax", fill = "color"), linetype = "solid", color = "black") +
+        ggplot2::scale_fill_identity(guide = "legend", name = NULL
                             , labels = c("queue waiting", "launcheR processes", "batch running", "batch waiting", "waiting // batch")
                             , breaks = c("grey70", "wheat1", "lightskyblue1", "grey60", "grey90"))
 
     # plot labels
-    p <- p + geom_label(data = plotdf[which(!is.na(plotdf$label)),], aes_string(x = "center_x", y = "center_y", label = "label"))
+    p <- p + ggplot2::geom_label(data = plotdf[which(!is.na(plotdf$label)),], ggplot2::aes_string(x = "center_x", y = "center_y", label = "label"))
 
     # Remove labs & add scale for date
-    p <- p + theme( axis.title.y = element_blank(),
-                    axis.ticks.y = element_blank(),
-                    axis.ticks.x = element_blank(),
-                    axis.title.x = element_blank()) +
-             theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-             theme(panel.background = element_blank()) +
-             theme(panel.border = element_blank())
+    p <- p + ggplot2::theme( axis.title.y = ggplot2::element_blank(),
+                    axis.ticks.y = ggplot2::element_blank(),
+                    axis.ticks.x = ggplot2::element_blank(),
+                    axis.title.x = ggplot2::element_blank()) +
+             ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+             ggplot2::theme(panel.background = ggplot2::element_blank()) +
+             ggplot2::theme(panel.border = ggplot2::element_blank())
 
     # Add scale x
     if (show_xlabs) {
-        p <- p + scale_x_continuous(breaks = plotdf$xmin, labels = Num2DateChar(plotdf$xmin))
+        p <- p + ggplot2::scale_x_continuous(breaks = plotdf$xmin, labels = Num2DateChar(plotdf$xmin))
     } else {
-        p <- p + theme(axis.text.x = element_blank())
+        p <- p + ggplot2::theme(axis.text.x = ggplot2::element_blank())
     }
     # Add scale y
     if (show_ylabs & any(show_queue, show_group, show_owner)) {
         labs_y <- unique(plotdf[which(!is.na(plotdf$ylabels)), c("center_y", "ylabels")])
         labs_y <- aggregate(labs_y$center_y, list(labs_y$ylabels), mean)
         colnames(labs_y) <- c("label", "break")
-        p <- p + scale_y_continuous(breaks = labs_y[,"break"], labels = labs_y[,"label"])
+        p <- p + ggplot2::scale_y_continuous(breaks = labs_y[,"break"], labels = labs_y[,"label"])
     } else {
-        p <- p + theme(axis.text.y = element_blank())
+        p <- p + ggplot2::theme(axis.text.y = ggplot2::element_blank())
     }
     return(p)
 }
