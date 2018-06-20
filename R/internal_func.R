@@ -189,7 +189,7 @@ releaseQueue <- function(id = NULL, status = "OK") {
 #' @importFrom gdata startsWith
 writeRenviron <- function(prefix, value) {
     x <- readLines(".Renviron")
-    toChange <- which(startsWith(x, paste0(prefix, "=")))
+    toChange <- which(gdata::startsWith(x, paste0(prefix, "=")))
     if (length(toChange) == 0) {
         x <- c(x, paste0(prefix, "='", value, "'"))
     } else {
