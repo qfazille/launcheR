@@ -173,15 +173,18 @@ releaseQueue <- function(id = NULL, status = "OK") {
     if (is.null(id)) {
         id    <- getQueueid()
     }
-
+    
     # Remove from waitBatch (priority 1)
     # If the queue terminate normally, there should not be any batch in the WaitBatch table anymore. (Because the releaseBatch function historized batchs)
     df <- getWaitBatch()
     bh <- df[which(df$queueid == id), ]
     if (nrow(bh) != 0) {
+        message(paste("Abandon batch(s) :", paste(bh$batchid, collapse = ", ")))
         historizedBatch(batchid = bh$batchid, status = "abandonned")
     }
+    
     # Write waitQueue (priority 2)
+    message(paste("Release queue :", id))
     historizedQueue(queueid = id, status = status)
 }
 

@@ -135,7 +135,7 @@ launchWaitBatch <- function(id) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in launchWaitBatch :", err))
+                warning(paste("Error in launchWaitBatch :", err))
                 break
             }
         })
@@ -159,7 +159,7 @@ launchWaitQueue <- function(id) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in launchWaitQueue :", err))
+                warning(paste("Error in launchWaitQueue :", err))
                 break
             }
         })
@@ -198,7 +198,7 @@ addWaitBatch <- function(batchid, queueid, group = as.character(NA), path, batch
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in addWaitBatch :", err))
+                warning(paste("Error in addWaitBatch :", err))
                 break
             }
         })
@@ -231,7 +231,7 @@ addWaitQueue <- function(queueid, group = as.character(NA), queuename, desc = as
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in WaitQueue :", err))
+                warning(paste("Error in WaitQueue :", err))
                 break
             }
         })
@@ -263,7 +263,7 @@ removeWaitQueue <- function(queueid = NULL, prefix = NULL) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in removeWaitQueue :", err))
+                warning(paste("Error in removeWaitQueue :", err))
                 break
             }
         })
@@ -299,7 +299,7 @@ removeWaitBatch <- function(batchid = NULL, queueid = NULL, prefix = NULL) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in removeWaitBatch :", err))
+                warning(paste("Error in removeWaitBatch :", err))
                 break
             }
         })
@@ -335,7 +335,7 @@ removeHistorizedBatch <- function(batchid = NULL, queueid = NULL, prefix = NULL)
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in removeHistorizedBatch :", err))
+                warning(paste("Error in removeHistorizedBatch :", err))
                 break
             }
         })
@@ -367,7 +367,7 @@ removeHistorizedQueue <- function(queueid = NULL, prefix = NULL) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in removeHistorizedQueue :", err))
+                warning(paste("Error in removeHistorizedQueue :", err))
                 break
             }
         })
@@ -380,19 +380,26 @@ historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
     df <- getWaitQueue()
     
     # If queueid is not present in df (possible in case queue already abandonned)
-    if (!queueid %in% df$queueid) return(NULL)
+    if (!queueid %in% df$queueid) {
+        warning(paste("Queueid", queueid, "not found"))
+        return(NULL)
+    }
     
     # keep order in queueid (param)
     df <- df[match(queueid, df$queueid), c("queueid", "group", "queuename", "desc", "owner", "startDate", "realStartDate")]
     
     # Check on endDate
     if (length(endDate) > 1) {
-        stopifnot(nrow(df) == length(endDate))
+        if (nrow(df) == length(endDate)) {
+            stop(paste("Number of queueid to remove is not equal to number of date in endDate"))
+        }
     }
     
     # Check on status
     if (length(status) > 1) {
-        stopifnot(nrow(df) == length(status))
+        if (nrow(df) == length(status)) {
+            stop(paste("Number of queueid to remove is not equal to the number of status given"))
+        }
     }
     
     # Add endDate & status
@@ -418,7 +425,7 @@ historizedQueue <- function(queueid, status = "OK", endDate = getDate()) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in historizedQueue :", err))
+                warning(paste("Error in historizedQueue :", err))
                 break
             }
         })
@@ -452,6 +459,8 @@ historizedBatch <- function(batchid, status, endDate = getDate()) {
     # Get columns order
     cols <- colnames(getHistorizedBatch())
     
+    # Last check if batchid not already abandonned ==> TO BE DONE, because can insert only NA (except status = abandonned)
+    
     # Add in historizedBatch
     mydb <- dbConnect(RSQLite::SQLite(), datafilepath(), synchronous = NULL)
     res <- dbSendQuery(mydb, "PRAGMA busy_timeout=5000;")
@@ -465,7 +474,7 @@ historizedBatch <- function(batchid, status, endDate = getDate()) {
             Sys.sleep(0.2)
             cpt <- cpt + 1
             if (cpt == 50) {
-                print(paste("Error in historizedBatch :", err))
+                warning(paste("Error in historizedBatch :", err))
                 break
             }
         })

@@ -83,7 +83,7 @@ progress <- function(percentage = NULL) {
                     Sys.sleep(0.2)
                     cpt <- cpt + 1
                     if (cpt == 50) {
-                        print(paste("Error in progress :", err))
+                        warning(paste("Error in progress :", err))
                         break
                     }
                 })
