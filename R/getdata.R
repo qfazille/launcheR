@@ -1,9 +1,10 @@
 datafilepath <- function() {
     folder <- Sys.getenv("launcheR_path")
-    if (folder == "") {
-        filepath <- file.path(dirname(tempdir()), "launcheR-db.sqlite")
-    } else {
+    # Check if launcheR_path is set & if the file launcheR-db.sqlite is writable (mode=2)
+    if (folder != "" & file.access(file.path(folder, "launcheR-db.sqlite"), mode = 2) == 0) {
         filepath <- file.path(folder, "launcheR-db.sqlite")
+    } else {
+        filepath <- file.path(dirname(tempdir()), "launcheR-db.sqlite")
     }
     return(filepath)
 }
